@@ -1,0 +1,3 @@
+title = "Introduction to pest"
+description = "An introduction to the pest parser by implementing a Rust grammar subset"
+author = "Dragoș Tiselice"
