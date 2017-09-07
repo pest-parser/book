@@ -25,7 +25,7 @@ you is linked at compile time.
 
 The actual grammar gets saved in separate `.pest` files, relative to Cargo's
 `src` directory. They are then used in order to derive an implementation of the
-[Parser](https://docs.rs/pest/1.0.0-beta/pest/trait.Parser.html) trait.
+[Parser][1] trait.
 
 Due to the fact that procedural macro do not offer an API to tell the compiler
 which files are relevant to compilation, it is necessary to provide a small hint
@@ -34,6 +34,8 @@ recompiled after every change.
 
 So, to define an unimaginatively but appropriately-named parser, you should add
 the following code to the Rust file where you want the parser to be.
+
+[1]: https://docs.rs/pest/1.0.0-beta/pest/trait.Parser.html
 
 ```rust
 #[cfg(debug_assertions)]
