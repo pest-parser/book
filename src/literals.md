@@ -46,8 +46,8 @@ grammar error
   = false is a rust keyword
 ```
 
-This is because every one of the rules you define will populate and `enum` name
-`Rule`. Thus, if any rules conflicts with Rust's naming scheme, it will error
+This is because every one of the rules you define will populate an `enum` named
+`Rule`. Thus, if any rules conflict with Rust's naming scheme, it will error
 out with an ambiguous message which is why *pest* tries its best to catch any
 possible error before it reaches the compiler.
 
