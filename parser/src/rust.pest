@@ -1,0 +1,3 @@
+true_lit  = { "true" }
+false_lit = { "false" }
+bool  = { true_lit | false_lit }

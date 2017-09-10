@@ -1,0 +1,8 @@
+[package]
+name = "parser"
+version = "0.1.0"
+authors = ["Dragos Tiselice <dragostiselice@gmail.com>"]
+
+[dependencies]
+pest = "^1.0.0-beta"
+pest_derive = { path = "../../pest/pest_derive" }
