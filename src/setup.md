@@ -19,8 +19,6 @@ generates the code that then makes use of the APIs found in the *pest* crate.
 This is separate because the actual procedural macro that derives the parser for
 you is linked at compile time.
 
-
-
 ## The `.pest` grammar file
 
 The actual grammar gets saved in separate `.pest` files, relative to Cargo's
@@ -32,18 +30,18 @@ which files are relevant to compilation, it is necessary to provide a small hint
 in the form of a debug-only `const` in order to make sure that your grammar gets
 recompiled after every change.
 
-So, to define an unimaginatively but appropriately-named parser, you should add
-the following code to the Rust file where you want the parser to be.
+So, you should add the following code to the Rust file where you want the parser
+to be.
 
 [1]: https://docs.rs/pest/1.0.0-beta/pest/trait.Parser.html
 
 ```rust
 #[cfg(debug_assertions)]
-const _GRAMMAR: &'static str = include_str!("path/to/my_grammar.pest"); // relative to this file
+const _GRAMMAR: &'static str = include_str!("path/to/rust.pest"); // relative to this file
 
 #[derive(Parser)]
-#[grammar = "path/to/my_grammar.pest"] // relative to src
-struct MyParser;
+#[grammar = "path/to/rust.pest"] // relative to src
+struct RustParser;
 ```
 
 Also, don't forget to add the crate dependency in your crate's main file.
