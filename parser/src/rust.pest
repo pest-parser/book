@@ -1,3 +1,15 @@
 true_lit  = { "true" }
 false_lit = { "false" }
-bool  = { true_lit | false_lit }
+bool      = { true_lit | false_lit }
+
+digit = _{ '0'..'9' }
+int   =  { digit ~ (digit | "_")* }
+
+
+plus  = { "+" }
+minus = { "-" }
+exp   = { ^"e" ~ (plus | minus)? ~ int }
+float = {
+    int ~ "." ~ int? ~ exp? |
+    int ~ exp
+}

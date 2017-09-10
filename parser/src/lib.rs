@@ -37,3 +37,152 @@ fn false_lit() {
         ]
     };
 }
+
+#[test]
+fn zero() {
+    parses_to! {
+        parser: RustParser,
+        input: "0",
+        rule: Rule::int,
+        tokens: [
+            int(0, 1)
+        ]
+    };
+}
+
+#[test]
+fn starts_with_zero() {
+    parses_to! {
+        parser: RustParser,
+        input: "01",
+        rule: Rule::int,
+        tokens: [
+            int(0, 2)
+        ]
+    };
+}
+
+#[test]
+fn zero_multiple_underscores() {
+    parses_to! {
+        parser: RustParser,
+        input: "0___",
+        rule: Rule::int,
+        tokens: [
+            int(0, 4)
+        ]
+    };
+}
+
+#[test]
+fn million() {
+    parses_to! {
+        parser: RustParser,
+        input: "1_000_000",
+        rule: Rule::int,
+        tokens: [
+            int(0, 9)
+        ]
+    };
+}
+
+#[test]
+fn zero_point() {
+    parses_to! {
+        parser: RustParser,
+        input: "0.",
+        rule: Rule::float,
+        tokens: [
+            float(0, 2, [
+                int(0, 1)
+            ])
+        ]
+    };
+}
+
+#[test]
+fn one_exp() {
+    parses_to! {
+        parser: RustParser,
+        input: "1e10",
+        rule: Rule::float,
+        tokens: [
+            float(0, 4, [
+                int(0, 1),
+                exp(1, 4, [
+                    int(2, 4)
+                ])
+            ])
+        ]
+    };
+}
+
+#[test]
+fn zero_point_exp() {
+    parses_to! {
+        parser: RustParser,
+        input: "0.e0",
+        rule: Rule::float,
+        tokens: [
+            float(0, 4, [
+                int(0, 1),
+                exp(2, 4, [
+                    int(3, 4)
+                ])
+            ])
+        ]
+    };
+}
+
+#[test]
+fn zero_point_zero_exp_plus() {
+    parses_to! {
+        parser: RustParser,
+        input: "0.0e+0",
+        rule: Rule::float,
+        tokens: [
+            float(0, 6, [
+                int(0, 1),
+                int(2, 3),
+                exp(3, 6, [
+                    plus(4, 5),
+                    int(5, 6)
+                ])
+            ])
+        ]
+    };
+}
+
+#[test]
+fn zero_point_zero() {
+    parses_to! {
+        parser: RustParser,
+        input: "0.0",
+        rule: Rule::float,
+        tokens: [
+            float(0, 3, [
+                int(0, 1),
+                int(2, 3)
+            ])
+        ]
+    };
+}
+
+#[test]
+fn float_with_underscores_exp_minus() {
+    parses_to! {
+        parser: RustParser,
+        input: "0__.0__e-0__",
+        rule: Rule::float,
+        tokens: [
+            float(0, 12, [
+                int(0, 3),
+                int(4, 7),
+                exp(7, 12, [
+                    minus(8, 9),
+                    int(9, 12)
+                ])
+            ])
+        ]
+    };
+}
