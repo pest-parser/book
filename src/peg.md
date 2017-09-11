@@ -78,3 +78,28 @@ match both, we have to make sure that the longer expression comes first:
 
 This way, `"ab"` will get matched by the first expression, while `"a"` will fail
 it, making way for the second one to match.
+
+## Left-recursion
+
+Because of their eager nature, PEGs will always start exploring possible paths
+from the left. This means that, if a rules gets to run itself before making any
+kind of progress, it will result in a stack-overflow. The following examples all
+fail to compile:
+
+```
+// Rule calls itself right away.
+rule = { rule }
+
+// Rule makes no progress before calling itself. (since "" always matches)
+rule = { "" ~ rule }
+
+// Rules indirectly left-recurse.
+rule_a = { rule_b }
+rule_b = { rule_a }
+
+// Rule still causes a stack-overflow for any other input than "a".
+rule = { "a" | rule }
+```
+
+All left-recursion use cases can be rewritten in PEG using repetition, as will
+be seen in later chapters.
