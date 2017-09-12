@@ -2,7 +2,8 @@
 
 A good place to start when writing out the grammar of a language are the
 literals. For our small Rust subset, the literals that we are going to define
-are booleans, integers, floating point numbers, strings, types, and identifiers.
+are booleans, integers, floating point numbers, strings, characters, types, and
+identifiers.
 
 ## Booleans
 
@@ -185,3 +186,101 @@ fn one_exponent() {
 
 More interesting test cases could be `"0.e0"`, `"0.0e+0"`, `"0.0"`,
 `"0__.0__e-0__"`.
+
+## Strings
+
+Strings can get a little bit tricky since you have to make sure that you include
+string escapes in your grammar. This is needed since you have no other way of
+knowing exactly where the string ending quote will be and also because it makes
+escaping easier later on.
+
+Let's start by focusing on the high level definition. A string is a repetition
+of raw string parts (containing no escapes) and actual escapes, all enclosed
+within a pair of quotes:
+
+```
+string = { "\"" ~ (raw_string | escape)* ~ "\"" }
+```
+
+Raw strings can basically be any character apart from `'\'`, since that means
+we're about to start an escape clause, and `'"'`, since that means we're about
+to end the string. In order to match anything but these two characters, we look
+ahead and fail the rule if we match these two characters. For this, we're going
+to use a negative lookahead (`!`). After we made sure that we're matching the
+correct character, we use the predefined rule `any` to actually force the parser
+to skip this character, since the lookahead is non-destructive:
+
+```
+raw_string = { (!("\\" | "\"") ~ any)+ }
+```
+
+Rust string literals can be:
+
+* predefined: `'\n'`, `'\r'`, `'\t'`, `'\\'`, `'\0'`,
+* bytes: `'\x$$'`, where `$$` are two hexadecimal digits
+* unicode: `\u{$}` - `\u{$$$$$$}`, where `$`s are from 1 up to 6 hexadecimal
+  digits
+
+A good place to start is to define the hex digit:
+
+```
+hex = _{ '0'..'9' | 'a'..'f' | 'A'..'F' }
+```
+
+To define a rule that can have from 1 up to 6 hex digits is to check whether
+you have 6 already, and, if not, to match as many as possible. This way, if you
+have more than 6, the rule will match the 6 and fail later down the path. It you
+have less than 6, the second part of the choice will obviously match less than 6
+as well.
+
+```
+unicode_hex = { hex ~ hex ~ hex ~ hex ~ hex ~ hex | hex+ }
+```
+
+We now have everything we need to define escapes:
+
+```
+predefined = { "n" | "r" | "t" | "\\" | "0" }
+byte       = { "x" ~ hex ~ hex }
+unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
+escape     = { "\\" ~ (predefined | byte | unicode) }
+```
+
+For the sake of compactness, we can write a single test that encompasses
+everything interesting:
+
+```rust
+#[test]
+fn string_with_all_escape_types() {
+    parses_to! {
+        parser: RustParser,
+        input: r#""a\nb\x0Fc\u{a}d\u{AbAbAb}e""#,
+        rule: Rule::string,
+        tokens: [
+            string(0, 28, [
+                raw_string(1, 2),
+                escape(2, 4, [
+                    predefined(3, 4)
+                ]),
+                raw_string(4, 5),
+                escape(5, 9, [
+                    byte(6, 9)
+                ]),
+                raw_string(9, 10),
+                escape(10, 15, [
+                    unicode(11, 15, [
+                        unicode_hex(13, 14)
+                    ])
+                ]),
+                raw_string(15, 16),
+                escape(16, 26, [
+                    unicode(17, 26, [
+                        unicode_hex(19, 25)
+                    ])
+                ]),
+                raw_string(26, 27)
+            ])
+        ]
+    };
+}
+```
