@@ -313,3 +313,22 @@ ty = { i32_ty | f32_ty | char_ty | str_ty }
 Writing one test for each of the four cases should suffice.
 
 ## Identifiers
+
+Full-blown Rust identifiers can be a bit complex, so we will only focus on ASCII
+variants:
+
+* an identifier is made up of alphanumeric characters and underscores
+* the first character cannot be a digit
+* underscores need to be followed by at least another character
+
+This can be implemented by having a choice clause between two cases:
+
+```
+ident_char = _{ 'a'..'z' | 'A'..'Z' | '0'..'9' | "_" }
+ident      =  {
+    ('a'..'z' | 'A'..'Z') ~ ident_char* |
+    "_" ~ ident_char+
+}
+```
+
+Interesting test cases could be `"aBc0"`, `"_0AbC"`.

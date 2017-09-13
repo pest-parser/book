@@ -33,3 +33,9 @@ char_ty = { "char" }
 str_ty  = { "str" }
 
 ty = { i32_ty | f32_ty | char_ty | str_ty }
+
+ident_char = _{ 'a'..'z' | 'A'..'Z' | '0'..'9' | "_" }
+ident      =  {
+    ('a'..'z' | 'A'..'Z') ~ ident_char* |
+    "_" ~ ident_char+
+}

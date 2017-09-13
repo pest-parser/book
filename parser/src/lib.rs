@@ -304,3 +304,27 @@ fn ty_str() {
         ]
     };
 }
+
+#[test]
+fn ident() {
+    parses_to! {
+        parser: RustParser,
+        input: "aBc0",
+        rule: Rule::ident,
+        tokens: [
+            ident(0, 4)
+        ]
+    };
+}
+
+#[test]
+fn ident_underscore() {
+    parses_to! {
+        parser: RustParser,
+        input: "_0AbC",
+        rule: Rule::ident,
+        tokens: [
+            ident(0, 5)
+        ]
+    };
+}
