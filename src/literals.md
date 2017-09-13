@@ -240,7 +240,7 @@ unicode_hex = { hex ~ hex ~ hex ~ hex ~ hex ~ hex | hex+ }
 We now have everything we need to define escapes:
 
 ```
-predefined = { "n" | "r" | "t" | "\\" | "0" }
+predefined = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
 byte       = { "x" ~ hex ~ hex }
 unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
 escape     = { "\\" ~ (predefined | byte | unicode) }
@@ -284,3 +284,15 @@ fn string_with_all_escape_types() {
     };
 }
 ```
+
+## Characters
+
+Characters are very similar to strings, with the obvious exception that may only
+store one character:
+
+```
+chr = { "'" ~ (escape | any) ~ "'" }
+```
+
+Tests should cover at least the usual and the escape cases, e.g. `"'a'"`,
+`"'\''"`.

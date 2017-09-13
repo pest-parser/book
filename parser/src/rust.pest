@@ -17,10 +17,12 @@ float = {
 hex = _{ '0'..'9' | 'a'..'f' | 'A'..'F' }
 
 unicode_hex = { hex ~ hex ~ hex ~ hex ~ hex ~ hex | hex+ }
-predefined  = { "n" | "r" | "t" | "\\" | "0" }
+predefined  = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
 byte        = { "x" ~ hex ~ hex }
 unicode     = { "u" ~ "{" ~ unicode_hex ~ "}" }
 escape      = { "\\" ~ (predefined | byte | unicode) }
+
+chr = { "'" ~ (escape | any) ~ "'" }
 
 raw_string = { (!("\\" | "\"") ~ any)+ }
 string     = { "\"" ~ (raw_string | escape)* ~ "\"" }

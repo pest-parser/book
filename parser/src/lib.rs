@@ -220,3 +220,31 @@ fn string_with_all_escape_types() {
         ]
     };
 }
+
+#[test]
+fn char_without_escape() {
+    parses_to! {
+        parser: RustParser,
+        input: "'a'",
+        rule: Rule::chr,
+        tokens: [
+            chr(0, 3)
+        ]
+    };
+}
+
+#[test]
+fn char_with_escape() {
+    parses_to! {
+        parser: RustParser,
+        input: "'\\''",
+        rule: Rule::chr,
+        tokens: [
+            chr(0, 4, [
+                escape(1, 3, [
+                    predefined(2, 3)
+                ])
+            ])
+        ]
+    };
+}
