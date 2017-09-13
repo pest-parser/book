@@ -296,3 +296,20 @@ chr = { "'" ~ (escape | any) ~ "'" }
 
 Tests should cover at least the usual and the escape cases, e.g. `"'a'"`,
 `"'\''"`.
+
+## Types
+
+Types should only be the few primitives defined here:
+
+```
+i32_ty  = { "i32" }
+f32_ty  = { "f32" }
+char_ty = { "char" }
+str_ty  = { "str" }
+
+ty = { i32_ty | f32_ty | char_ty | str_ty }
+```
+
+Writing one test for each of the four cases should suffice.
+
+## Identifiers

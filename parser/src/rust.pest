@@ -26,3 +26,10 @@ chr = { "'" ~ (escape | any) ~ "'" }
 
 raw_string = { (!("\\" | "\"") ~ any)+ }
 string     = { "\"" ~ (raw_string | escape)* ~ "\"" }
+
+i32_ty  = { "i32" }
+f32_ty  = { "f32" }
+char_ty = { "char" }
+str_ty  = { "str" }
+
+ty = { i32_ty | f32_ty | char_ty | str_ty }

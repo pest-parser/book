@@ -248,3 +248,59 @@ fn char_with_escape() {
         ]
     };
 }
+
+#[test]
+fn ty_i32() {
+    parses_to! {
+        parser: RustParser,
+        input: "i32",
+        rule: Rule::ty,
+        tokens: [
+            ty(0, 3, [
+                i32_ty(0, 3)
+            ])
+        ]
+    };
+}
+
+#[test]
+fn ty_f32() {
+    parses_to! {
+        parser: RustParser,
+        input: "f32",
+        rule: Rule::ty,
+        tokens: [
+            ty(0, 3, [
+                f32_ty(0, 3)
+            ])
+        ]
+    };
+}
+
+#[test]
+fn ty_char() {
+    parses_to! {
+        parser: RustParser,
+        input: "char",
+        rule: Rule::ty,
+        tokens: [
+            ty(0, 4, [
+                char_ty(0, 4)
+            ])
+        ]
+    };
+}
+
+#[test]
+fn ty_str() {
+    parses_to! {
+        parser: RustParser,
+        input: "str",
+        rule: Rule::ty,
+        tokens: [
+            ty(0, 3, [
+                str_ty(0, 3)
+            ])
+        ]
+    };
+}
