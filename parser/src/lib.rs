@@ -328,3 +328,55 @@ fn ident_underscore() {
         ]
     };
 }
+
+#[test]
+fn expr_complex() {
+    parses_to! {
+        parser: RustParser,
+        input: "-!a.cool(1.0,'h')*\"boo\"",
+        rule: Rule::expr,
+        tokens: [
+            expr(0, 23, [
+                term(0, 17, [
+                    op_unary_minus(0, 1),
+                    op_unary_not(1, 2),
+                    value(2, 3, [
+                        ident(2, 3)
+                    ]),
+                    dot(3, 4),
+                    call(4, 17, [
+                        ident(4, 8),
+                        paren_open(8, 9),
+                        expr(9, 12, [
+                            term(9, 12, [
+                                value(9, 12, [
+                                    float(9, 12, [
+                                        int(9, 10),
+                                        int(11, 12)
+                                    ])
+                                ])
+                            ])
+                        ]),
+                        comma(12, 13),
+                        expr(13, 16, [
+                            term(13, 16, [
+                                value(13, 16, [
+                                    chr(13, 16)
+                                ])
+                            ])
+                        ]),
+                        paren_close(16, 17)
+                    ])
+                ]),
+                op_times(17, 18),
+                term(18, 23, [
+                    value(18, 23, [
+                        string(18, 23, [
+                            raw_string(19, 22)
+                        ])
+                    ])
+                ])
+            ])
+        ]
+    };
+}

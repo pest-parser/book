@@ -101,5 +101,5 @@ rule_b = { rule_a }
 rule = { "a" | rule }
 ```
 
-All left-recursion use cases can be rewritten in PEG using repetition, as will
-be seen in later chapters.
+All left-recursion use cases can be rewritten in PEG using repetition or layers
+of indirection, as will be seen in later chapters.
