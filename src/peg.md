@@ -59,7 +59,7 @@ expression `("aaaa")()`.
 ## Choice order
 
 In order to keep the promise of non-ambiguity, choice expressions have to be run
-in a predefined order, from right to left. This has an relevant implication when
+in a predefined order, from left to right. This has an relevant implication when
 rules have overlapping beginnings. Take the following example:
 
 ```
