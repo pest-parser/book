@@ -10,8 +10,8 @@ on [rustup.rs](https://rustup.rs). Once that is out of the way, make sure you
 add *pest* to your `Cargo.toml`:
 
 ```toml
-pest = "^1.0.0-beta"
-pest_derive = "^1.0.0-beta"
+pest = "^1.0"
+pest_derive = "^1.0"
 ```
 
 *pest_derive* is the part of the parser that analyzes, verifies, optimizes, and
@@ -33,7 +33,7 @@ recompiled after every change.
 So, you should add the following code to the Rust file where you want the parser
 to be.
 
-[1]: https://docs.rs/pest/1.0.0-beta/pest/trait.Parser.html
+[1]: https://docs.rs/pest/1.0/pest/trait.Parser.html
 
 ```rust
 #[cfg(debug_assertions)]
