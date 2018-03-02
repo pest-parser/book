@@ -33,7 +33,7 @@ recompiled after every change.
 So, you should add the following code to the Rust file where you want the parser
 to be.
 
-[1]: https://docs.rs/pest/1.0.6/pest/trait.Parser.html
+[1]: https://docs.rs/pest/1.0/pest/trait.Parser.html
 
 ```rust
 #[cfg(debug_assertions)]
