@@ -95,7 +95,7 @@ fn false_lit() {
 }
 ```
 
-[1]: https://docs.rs/pest/1.0.0-beta/pest/macro.parses_to.html
+[1]: https://docs.rs/pest/1.0/pest/macro.parses_to.html
 
 ## Integers
 
@@ -227,21 +227,21 @@ A good place to start is to define the hex digit:
 hex = _{ '0'..'9' | 'a'..'f' | 'A'..'F' }
 ```
 
-To define a rule that can have from 1 up to 6 hex digits is to check whether
-you have 6 already, and, if not, to match as many as possible. This way, if you
-have more than 6, the rule will match the 6 and fail later down the path. It you
-have less than 6, the second part of the choice will obviously match less than 6
-as well.
+To define a rule that can have from 1 up to 6 hex digits, pest offers a convenient
+syntax `{m, n}`. Limits are inclusive. Note that `{n}`, `{n, }`, and `{, n}` syntaxes
+exist too. Please see [non-terminals expressions][2] for more details.
 
 ```
-unicode_hex = { hex ~ hex ~ hex ~ hex ~ hex ~ hex | hex+ }
+unicode_hex = { hex{1, 6} }
 ```
+
+[2]: https://docs.rs/pest_derive/1.0/pest_derive/#expressions
 
 We now have everything we need to define escapes:
 
 ```
 predefined = { "n" | "r" | "t" | "\\" | "0" | "\"" | "'" }
-byte       = { "x" ~ hex ~ hex }
+byte       = { "x" ~ hex{2} }
 unicode    = { "u" ~ "{" ~ unicode_hex ~ "}" }
 escape     = { "\\" ~ (predefined | byte | unicode) }
 ```
