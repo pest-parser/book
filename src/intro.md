@@ -19,6 +19,6 @@ means to express the problem of parsing in a simple and natural way. It even
 comes with an [official book](https://doc.rust-lang.org/book/) to get you
 started.
 
-This introduction will explore the implementation of a subset of Rust's own
-grammar, from the simplest terminals to the construction of an AST. After
-reading it, you should be comfortable writing parsers with *pest*.
+The final chapter of this book will explore the implementation of a subset of
+Rust's own grammar, from the simplest terminals to the construction of an AST.
+After reading it, you should be comfortable writing parsers with *pest*.

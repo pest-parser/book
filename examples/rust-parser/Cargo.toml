@@ -1,8 +1,8 @@
 [package]
-name = "parser"
+name = "rust-parser"
 version = "0.1.0"
 authors = ["Dragos Tiselice <dragostiselice@gmail.com>"]
 
 [dependencies]
-pest = "^1.0.0-beta"
-pest_derive = { path = "../../pest/pest_derive" }
+pest = "1.0"
+pest_derive = "1.0"
