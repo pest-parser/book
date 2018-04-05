@@ -1,7 +1,7 @@
 # Summary
 
 - [Introduction](./intro.md)
-    - [Example: CSV (WIP)](./examples/csv.md)
+    - [Example: CSV](./examples/csv.md)
 - [Parser API (WIP)](./parser_api.md)
     - [Example: INI (WIP)](./examples/ini.md)
 - [Grammars (WIP)](./grammars/grammars.md)

@@ -1,0 +1,8 @@
+[package]
+name = "csv-tool"
+version = "0.1.0"
+authors = ["wirelyre <wirelyre@gmail.com>"]
+
+[dependencies]
+pest = "1.0"
+pest_derive = "1.0"
