@@ -64,7 +64,8 @@ fn eval(expression: Pairs<Rule>) -> f64 {
             Rule::divide   => lhs / rhs,
             Rule::power    => lhs.powf(rhs),
             _ => unreachable!(),
-        })
+        },
+    )
 }
 ```
 
