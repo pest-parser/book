@@ -2,7 +2,7 @@
 
 - [Introduction](./intro.md)
     - [Example: CSV](./examples/csv.md)
-- [Parser API (WIP)](./parser_api.md)
+- [Parser API](./parser_api.md)
     - [Example: INI (WIP)](./examples/ini.md)
 - [Grammars (WIP)](./grammars/grammars.md)
     - [Parsing expression grammars (WIP)](./grammars/peg.md)
