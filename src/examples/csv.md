@@ -29,7 +29,7 @@ $ cd csv-tool
 
 Add the `pest` and `pest_derive` crates to the dependencies section in `Cargo.toml`:
 
-```ini
+```toml
 [dependencies]
 pest = "1.0"
 pest_derive = "1.0"
