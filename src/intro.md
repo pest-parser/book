@@ -2,23 +2,81 @@
 
 *Speed or simplicity? Why not __both__?*
 
-The motivation behind *pest* was to come up with a parser that would maximize
-usability, both when designing the grammar, and when maintaining it after
-prolonged use and development. And, as Rust tradition mandates, this parser had
-to make sure that its use of high-level abstractions would not hinder
-performance. As such, *pest* is perfectly suited for complete beginners who want
-to learn and experiment with grammars and parsing, but who do not want to be
-constrained in terms of speed.
+`pest` is a library for writing plain-text parsers in Rust.
 
-*pest* is implemented in Rust and requires some knowledge of the language in
-order to be used. The reason for picking it over other languages is that it
-offers C-like low level access and encourages the use of multi-threaded
-programming, both of great use when writing a compiler or VM to accompany your
-parser. At the same time, Rust's procedural macros and functional APIs provide a
-means to express the problem of parsing in a simple and natural way. It even
-comes with an [official book](https://doc.rust-lang.org/book/) to get you
-started.
+Parsers that use `pest` are **easy to design and maintain** due to the use of
+[Parsing Expression Grammars], or *PEGs*. And, because of Rust's zero-cost
+abstractions, `pest` parsers can be **very fast**.
 
-This introduction will explore the implementation of a subset of Rust's own
-grammar, from the simplest terminals to the construction of an AST. After
-reading it, you should be comfortable writing parsers with *pest*.
+## Sample
+
+Here is the complete grammar for a simple calculator [developed in a (currently
+unwritten) later chapter](examples/calculator.html):
+
+```
+num = @{ int ~ ("." ~ digit*)? ~ (^"e" ~ int)? }
+    int = { ("+" | "-")? ~ digit+ }
+    digit = { '0'..'9' }
+
+operation = _{ add | subtract | multiply | divide | power }
+    add      = { "+" }
+    subtract = { "-" }
+    multiply = { "*" }
+    divide   = { "/" }
+    power    = { "^" }
+
+expr = { term ~ (operation ~ term)* }
+term = _{ num | "(" ~ expr ~ ")" }
+
+calculation = _{ soi ~ expr ~ eoi }
+
+whitespace = _{ " " | "\t" }
+```
+
+And here is the function that uses that parser to calculate answers:
+
+```rust
+lazy_static! {
+    static ref PREC_CLIMBER: PrecClimber<Rule> = {
+        use Rule::*;
+        use Assoc::*;
+
+        PrecClimber::new(vec![
+            Operator::new(add, Left) | Operator::new(subtract, Left),
+            Operator::new(multiply, Left) | Operator::new(divide, Left),
+            Operator::new(power, Right)
+        ])
+    };
+}
+
+fn eval(expression: Pairs<Rule>) -> f64 {
+    PREC_CLIMBER.climb(
+        expression,
+        |pair: Pair<Rule>| match pair.as_rule() {
+            Rule::num => pair.as_str().parse::<f64>().unwrap(),
+            Rule::expr => eval(pair.into_inner()),
+            _ => unreachable!(),
+        },
+        |lhs: f64, op: Pair<Rule>, rhs: f64| match op.as_rule() {
+            Rule::add      => lhs + rhs,
+            Rule::subtract => lhs - rhs,
+            Rule::multiply => lhs * rhs,
+            Rule::divide   => lhs / rhs,
+            Rule::power    => lhs.powf(rhs),
+            _ => unreachable!(),
+        },
+    )
+}
+```
+
+## About this book
+
+This book provides an overview of `pest` as well as several example parsers.
+For more details of `pest`'s API, check [the documentation].
+
+Note that `pest` uses some advanced features of the Rust language. For an
+introduction to Rust, consult the [official Rust book].
+
+[Parsing Expression Grammars]: ./grammars/peg.html
+[the documentation]: https://docs.rs/pest/
+[official Rust book]: https://doc.rust-lang.org/stable/book/second-edition/
