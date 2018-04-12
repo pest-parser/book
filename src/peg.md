@@ -28,7 +28,7 @@ soi ~ "a"* ~ "a" ~ eoi
 ```
 
 `soi` and `eoi` stand for start-of-input and end-of-input respectively and work
-much like their regex counterparts. `~` is used in order to crate sequences,
+much like their regex counterparts. `~` is used in order to create sequences,
 while the rest of the syntax should be straightforward coming from the previous
 example.
 
