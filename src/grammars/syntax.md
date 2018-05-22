@@ -286,12 +286,27 @@ ws = _{ " " }
 com = _{ "/*" ~ (!"*/" ~ any)* ~ "*/" }
 ```
 
+Note that implicit whitespace is *not* inserted at the beginning or end of rules
+&mdash; for instance, `expression` does *not* match `" 4+5 "`. If you want to
+include implicit whitespace at the beginning and end of a rule, you will need to
+sandwich it between two empty rules (often `soi` and `eoi` [as above]):
+
+```
+whitespace = _{ " " }
+expression = { "4" ~ "+" ~ "5" }
+main = { soi ~ expression ~ eoi }
+    matches
+"4+5"
+"  4 + 5   "
+```
+
 (Be sure to mark the `whitespace` and `comment` rules as [silent] unless you
 want to see them included inside other rules!)
 
 [sequence]: #sequence
 [repetition]: #repetition
 [atomic rules]: #atomic
+[as above]: #start-and-end-of-input
 [silent]: #silent-and-atomic-rules
 
 ## Silent and atomic rules

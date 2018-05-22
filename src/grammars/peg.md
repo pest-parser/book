@@ -52,8 +52,8 @@ or fails, consuming nothing.
 ```
 
 If an expression fails to match, the failure propagates upwards, eventually
-leading to a failed parse. However, a failure can be "caught" using the *choice
-operator*.
+leading to a failed parse, unless the failure is "caught" somewhere in the
+grammar. The *choice operator* is one way to "catch" such failures.
 
 [repetition]: grammars/syntax.html#repetition
 
