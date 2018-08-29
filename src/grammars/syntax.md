@@ -122,7 +122,7 @@ It is somewhat tempting to borrow terminology and think of this operation as
 "alternation" or simply "OR", but this is misleading. The word "choice" is used
 specifically because [the operation is *not* merely logical "OR"].
 
-[the operation is *not* merely logical "OR"]: grammars/peg.html#ordered-choice
+[the operation is *not* merely logical "OR"]: peg.html#ordered-choice
 
 ### Repetition
 
@@ -322,8 +322,8 @@ To make a silent rule, precede the left curly bracket `{` with a low line
 silent = _{ ... }
 ```
 
-[pairs]: parser_api.html#pairs
-[tokens]: parser_api.html#tokens
+[pairs]: ../parser_api.html#pairs
+[tokens]: ../parser_api.html#tokens
 
 ### Atomic
 
@@ -426,7 +426,7 @@ raw_string_interior = {
 }
 ```
 
-["raw string literals"]: https://doc.rust-lang.org/book/second-edition/appendix-02-operators.html#standalone-syntax
+["raw string literals"]: https://doc.rust-lang.org/book/second-edition/appendix-02-operators.html#non-operator-symbols
 
 # Cheat sheet
 

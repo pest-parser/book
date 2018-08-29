@@ -36,7 +36,7 @@ impl Parser for MyParser {
 You will never see `enum Rules` or `impl Parser` as plain text! The code only
 exists during compilation. However, you can use `Rules` just like any other
 enum, and you can use `parse(...)` through the [`Pairs`] interface described in
-the [Parser API chapter](parser_api.html).
+the [Parser API chapter](../parser_api.html).
 
 ### Technical note: `_GRAMMAR`
 
@@ -63,7 +63,7 @@ carefully. We'll mention some common mistakes regarding PEGs.
 
 [`Pairs`]: https://docs.rs/pest/1.0/pest/iterators/struct.Pairs.html
 [`include_str!`]: https://doc.rust-lang.org/std/macro.include_str.html
-[eager]: grammars/peg.html#eagerness
-[non-backtracking]: grammars/peg.html#non-backtracking
-[ordered]: grammars/peg.html#ordered-choice
-[unambiguous]: grammars/peg.html#unambiguous
+[eager]: peg.html#eagerness
+[non-backtracking]: peg.html#non-backtracking
+[ordered]: peg.html#ordered-choice
+[unambiguous]: peg.html#unambiguous
