@@ -55,7 +55,7 @@ If an expression fails to match, the failure propagates upwards, eventually
 leading to a failed parse, unless the failure is "caught" somewhere in the
 grammar. The *choice operator* is one way to "catch" such failures.
 
-[repetition]: grammars/syntax.html#repetition
+[repetition]: syntax.html#repetition
 
 ## Ordered choice
 
@@ -77,7 +77,7 @@ fails, try `"ab"` instead". If you are matching on the string `"abc"`, "try
 In general, when writing a parser with choices, put the longest or most
 specific choice first, and the shortest or most general choice last.
 
-[choice operator]: grammars/syntax.html#ordered-choice
+[choice operator]: syntax.html#ordered-choice
 
 ## Non-backtracking
 

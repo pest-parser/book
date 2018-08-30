@@ -77,6 +77,6 @@ For more details of `pest`'s API, check [the documentation].
 Note that `pest` uses some advanced features of the Rust language. For an
 introduction to Rust, consult the [official Rust book].
 
-[Parsing Expression Grammars]: ./grammars/peg.html
+[Parsing Expression Grammars]: grammars/peg.html
 [the documentation]: https://docs.rs/pest/
 [official Rust book]: https://doc.rust-lang.org/stable/book/second-edition/

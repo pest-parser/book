@@ -202,7 +202,7 @@ Number of records: 5
 ```
 
 [Cargo]: https://doc.rust-lang.org/cargo/
-[a later chapter about `whitespace`]: ./grammars/syntax.html
+[a later chapter about `whitespace`]: ../grammars/syntax.html
 [`File`]: https://doc.rust-lang.org/std/fs/struct.File.html
 [`expect`]: https://doc.rust-lang.org/std/option/enum.Option.html#method.expect
 [`pest::iterators::Pair`]: https://docs.rs/pest/1.0/pest/iterators/struct.Pair.html
