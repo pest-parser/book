@@ -250,8 +250,8 @@ useful methods for examining the string around that position. For example,
 Essentially, a `Position` is a `Token` without a rule. In fact, you can use
 pattern matching to turn a `Token` into its component `Rule` and `Position`.
 
-[`Token`]: https://docs.rs/pest/1.0/pest/enum.Token.html
-[`Pair`]: https://docs.rs/pest/1.0/pest/iterators/struct.Pair.html
-[`Parser`]: https://docs.rs/pest/1.0/pest/trait.Parser.html
-[`Span`]: https://docs.rs/pest/1.0/pest/struct.Span.html
-[`Position`]: https://docs.rs/pest/1.0/pest/struct.Position.html
+[`Token`]: https://docs.rs/pest/2.0/pest/enum.Token.html
+[`Pair`]: https://docs.rs/pest/2.0/pest/iterators/struct.Pair.html
+[`Parser`]: https://docs.rs/pest/2.0/pest/trait.Parser.html
+[`Span`]: https://docs.rs/pest/2.0/pest/struct.Span.html
+[`Position`]: https://docs.rs/pest/2.0/pest/struct.Position.html

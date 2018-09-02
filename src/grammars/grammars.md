@@ -61,7 +61,7 @@ tripped up by comparisons to other tools.
 If you have used other parsing tools before, be sure to read the next section
 carefully. We'll mention some common mistakes regarding PEGs.
 
-[`Pairs`]: https://docs.rs/pest/1.0/pest/iterators/struct.Pairs.html
+[`Pairs`]: https://docs.rs/pest/2.0/pest/iterators/struct.Pairs.html
 [`include_str!`]: https://doc.rust-lang.org/std/macro.include_str.html
 [eager]: peg.html#eagerness
 [non-backtracking]: peg.html#non-backtracking
