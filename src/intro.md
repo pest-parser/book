@@ -28,9 +28,9 @@ operation = _{ add | subtract | multiply | divide | power }
 expr = { term ~ (operation ~ term)* }
 term = _{ num | "(" ~ expr ~ ")" }
 
-calculation = _{ soi ~ expr ~ eoi }
+calculation = _{ SOI ~ expr ~ EOI }
 
-whitespace = _{ " " | "\t" }
+WHITESPACE = _{ " " | "\t" }
 ```
 
 And here is the function that uses that parser to calculate answers:

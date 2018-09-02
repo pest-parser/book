@@ -89,25 +89,25 @@ Consider this grammar, matching on the string `"frumious"`:
 
 ```
 word = {     // to recognize an word...
-    any*     //   take any character, zero or more times...
-    ~ any    //   followed by any character
+    ANY*     //   take any character, zero or more times...
+    ~ ANY    //   followed by any character
 }
 ```
 
 You might expect this rule to parse any input string that contains at least one
-character (equivalent to `any+`). But it will not. Instead, the first `any*`
+character (equivalent to `ANY+`). But it will not. Instead, the first `ANY*`
 will eagerly eat the entire string &mdash; it will *succeed*. Then, the next
-`any` will have nothing left, so it will fail.
+`ANY` will have nothing left, so it will fail.
 
 ```
 "frumious"
  ^ (word)
 
 "frumious"
-         ^ (any*) Success! Continue to `any` with remaining input "".
+         ^ (ANY*) Success! Continue to `ANY` with remaining input "".
 
 ""
- ^ (any) Failure! Expected one character, but found end of string.
+ ^ (ANY) Failure! Expected one character, but found end of string.
 ```
 
 In a system with backtracking (like regular expressions), you would back up one

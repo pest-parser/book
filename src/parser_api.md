@@ -1,7 +1,7 @@
 # Parser API
 
-`pest` provides several ways of accessing the results of a successful parse. We
-will use the following grammar to demonstrate examples:
+`pest` provides several ways of accessing the results of a successful parse.
+The examples below use the following grammar:
 
 ```
 number = { '0'..'9'+ }                   // one or more decimal digits
@@ -169,6 +169,7 @@ A `pest`-derived [`Parser`] has a single method `parse` which returns a
 to `match` on or `unwrap` the result:
 
 ```rust
+// check whether parse was successful
 match Parser::parse(Rule::enclosed, "(..6472..)") {
     Ok(mut pairs) => {
         let enclosed = pairs.next().unwrap();
@@ -238,14 +239,13 @@ raw source text, rather than the interior text alone. For example, you might
 want to print the entire line that contained the match. For this you can use
 [`Span`] and [`Position`].
 
-A `Span` is returned from `Pair::into_span`. Spans have a start position and an
+A `Span` is returned from `Pair::as_span`. Spans have a start position and an
 end position (which correspond to the start and end tokens of the rule that
 made the pair).
 
 Spans can be decomposed into their start and end `Position`s, which provide
 useful methods for examining the string around that position. For example,
-`Position::line_col()` finds out the line and column number of a position,
-while `Position::skip(n)` moves forward the given number of characters.
+`Position::line_col()` finds out the line and column number of a position.
 
 Essentially, a `Position` is a `Token` without a rule. In fact, you can use
 pattern matching to turn a `Token` into its component `Rule` and `Position`.

@@ -27,10 +27,16 @@ fn main() {
     let mut record_count: u64 = 0;
 
     for record in file.into_inner() {
-        record_count += 1;
+        match record.as_rule() {
+            Rule::record => {
+                record_count += 1;
 
-        for field in record.into_inner() {
-            field_sum += field.as_str().parse::<f64>().unwrap();
+                for field in record.into_inner() {
+                    field_sum += field.as_str().parse::<f64>().unwrap();
+                }
+            }
+            Rule::EOI => (),
+            _ => unreachable!(),
         }
     }
 
