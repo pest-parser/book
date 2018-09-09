@@ -7,6 +7,7 @@
 - [Grammars](grammars/grammars.md)
     - [Parsing expression grammars](grammars/peg.md)
     - [Syntax of pest parsers](grammars/syntax.md)
+    - [Built-in rules](grammars/built-ins.md)
     - [Example: JSON (WIP)](examples/json.md)
 - [Operator precedence (WIP)](precedence.md)
     - [Example: Calculator (WIP)](examples/calculator.md)
