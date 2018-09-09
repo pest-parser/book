@@ -5,12 +5,12 @@ simple imperative code that you would write if you were writing a parser by
 hand.
 
 ```
-digit = {           // To recognize a digit...
-    '0'..'9'        //   take any character from '0' to '9'.
+number = {            // To recognize a number...
+    ASCII_DIGIT+      //   take as many ASCII digits as possible (at least one).
 }
-expression = {      // To recognize an expression...
-    digit+          //   first take as many digits as possible (at least one)...
-    | "true"        //   or, if that fails, the string "true".
+expression = {        // To recognize an expression...
+    number            //   first try to take a number...
+    | "true"          //   or, if that fails, the string "true".
 }
 ```
 
@@ -22,7 +22,7 @@ comments above.
 When a [repetition] PEG expression is run on an input string,
 
 ```
-('0'..'9')+      // one or more characters from '0' to '9'
+ASCII_DIGIT+      // one or more characters from '0' to '9'
 ```
 
 it runs that expression as many times as it can (matching "eagerly", or
@@ -31,7 +31,7 @@ remaining input on to the next step in the parser,
 
 ```
 "42 boxes"
- ^ Running ('0'..'9')+
+ ^ Running ASCII_DIGIT+
 
 "42 boxes"
    ^ Successfully took one or more digits!
@@ -44,7 +44,7 @@ or fails, consuming nothing.
 
 ```
 "galumphing"
- ^ Running ('0'..'9')+
+ ^ Running ASCII_DIGIT+
    Failed to take one or more digits!
 
 "galumphing"
@@ -122,7 +122,7 @@ These rules form an elegant and simple system. Every PEG rule is run on the
 remainder of the input string, consuming as much input as necessary. Once a
 rule is done, the rest of the input is passed on to the rest of the parser.
 
-For instance, the expression `('0'..'9')+`, "one or more digits", will always
+For instance, the expression `ASCII_DIGIT+`, "one or more digits", will always
 match the largest sequence of consecutive digits possible. There is no danger
 of accidentally having a later rule back up and steal some digits in an
 unintuitive and nonlocal way.

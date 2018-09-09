@@ -6,8 +6,6 @@ use pest::Parser;
 use std::fs::File;
 use std::io::Read;
 
-const _GRAMMAR: &str = include_str!("csv.pest");
-
 #[derive(Parser)]
 #[grammar = "csv.pest"]
 pub struct CSVParser;

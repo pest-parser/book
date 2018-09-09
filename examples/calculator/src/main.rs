@@ -9,8 +9,6 @@ use pest::iterators::{Pair, Pairs};
 use pest::prec_climber::*;
 use std::io::BufRead;
 
-const _GRAMMAR: &str = include_str!("grammar.pest");
-
 #[derive(Parser)]
 #[grammar = "grammar.pest"]
 struct Calculator;

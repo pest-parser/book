@@ -4,7 +4,7 @@
 The examples below use the following grammar:
 
 ```
-number = { '0'..'9'+ }                   // one or more decimal digits
+number = { ASCII_DIGIT+ }                // one or more decimal digits
 enclosed = { "(.." ~ number ~ "..)" }    // for instance, "(..6472..)"
 sum = { number ~ " + " ~ number }        // for instance, "1362 + 12"
 ```
@@ -199,7 +199,7 @@ invalid input, `Pair` and `Pairs` often have more subtle behavior. For
 instance, with this grammar:
 
 ```
-number = { '0'..'9'+ }
+number = { ASCII_DIGIT+ }
 sum = { number ~ " + " ~ number }
 ```
 

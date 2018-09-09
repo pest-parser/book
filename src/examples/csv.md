@@ -53,19 +53,17 @@ into Rust code. Let's write a grammar for a CSV file that contains numbers.
 Create a new file named `src/csv.pest` with a single line:
 
 ```
-field = { ('0'..'9' | "." | "-")+ }
+field = { (ASCII_DIGIT | "." | "-")+ }
 ```
 
-This is a description of every number field: each character is either a digit
-`0` through `9`, a full stop `.`, or a hyphen&ndash;minus `-`. The plus sign
-`+` indicates that the pattern can occur one or more times.
+This is a description of every number field: each character is either an ASCII
+digit `0` through `9`, a full stop `.`, or a hyphen&ndash;minus `-`. The plus
+sign `+` indicates that the pattern can occur one or more times.
 
 Rust needs to know to compile this file using `pest`:
 
 ```rust
 use pest::Parser;
-
-const _GRAMMAR: &str = include_str!("csv.pest");
 
 #[derive(Parser)]
 #[grammar = "csv.pest"]
@@ -101,7 +99,7 @@ Yikes! That's a complicated type! But you can see that the successful parse was
 For now, let's complete the grammar:
 
 ```
-field = { ('0'..'9' | "." | "-")+ }
+field = { (ASCII_DIGIT | "." | "-")+ }
 record = { field ~ ("," ~ field)* }
 file = { SOI ~ (record ~ ("\r\n" | "\n"))* ~ EOI }
 ```
@@ -111,11 +109,11 @@ by `def`. (For this grammar, `"abc" ~ "def"` is exactly the same as `"abcdef"`,
 although this is not true in general; see [a later chapter about
 `WHITESPACE`].)
 
-In addition to literal strings (`"\r\n"`) and character ranges (`'0'..'9'`),
-rules can contain other rules. For instance, a `record` is a `field`, and
-optionally a comma `,` and then another `field` repeated as many times as
-necessary. The asterisk `*` is just like the plus sign `+`, except the pattern
-is optional: it can occur any number of times at all (zero or more).
+In addition to literal strings (`"\r\n"`) and built-ins (`ASCII_DIGIT`), rules
+can contain other rules. For instance, a `record` is a `field`, and optionally
+a comma `,` and then another `field` repeated as many times as necessary. The
+asterisk `*` is just like the plus sign `+`, except the pattern is optional: it
+can occur any number of times at all (zero or more).
 
 There are two more rules that we haven't defined: `SOI` and `EOI` are two
 special rules that match, respectively, the *start of input* and the *end of
