@@ -31,8 +31,8 @@ Add the `pest` and `pest_derive` crates to the dependencies section in `Cargo.to
 
 ```toml
 [dependencies]
-pest = "1.0"
-pest_derive = "1.0"
+pest = "2.0"
+pest_derive = "2.0"
 ```
 
 And finally bring `pest` and `pest_derive` into scope in `src/main.rs`:
@@ -53,19 +53,17 @@ into Rust code. Let's write a grammar for a CSV file that contains numbers.
 Create a new file named `src/csv.pest` with a single line:
 
 ```
-field = { ('0'..'9' | "." | "-")+ }
+field = { (ASCII_DIGIT | "." | "-")+ }
 ```
 
-This is a description of every number field: each character is either a digit
-`0` through `9`, a full stop `.`, or a hyphen&ndash;minus `-`. The plus sign
-`+` indicates that the pattern can occur one or more times.
+This is a description of every number field: each character is either an ASCII
+digit `0` through `9`, a full stop `.`, or a hyphen&ndash;minus `-`. The plus
+sign `+` indicates that the pattern can occur one or more times.
 
 Rust needs to know to compile this file using `pest`:
 
 ```rust
 use pest::Parser;
-
-const _GRAMMAR: &str = include_str!("csv.pest");
 
 #[derive(Parser)]
 #[grammar = "csv.pest"]
@@ -91,8 +89,8 @@ fn main() {
 ```shell
 $ cargo run
   [ ... ]
-Ok(Pairs { pairs: [Pair { rule: field, span: Span { start: 0, end: 7 }, inner: Pairs { pairs: [] } }] })
-Err(ParsingError { positives: [field], negatives: [], pos: Position { pos: 0 } })
+Ok([Pair { rule: field, span: Span { str: "-273.15", start: 0, end: 7 }, inner: [] }])
+Err(Error { variant: ParsingError { positives: [field], negatives: [] }, location: Pos(0), path: None, line: "this is not a number", continued_line: None, start: (1, 1), end: None })
 ```
 
 Yikes! That's a complicated type! But you can see that the successful parse was
@@ -101,25 +99,25 @@ Yikes! That's a complicated type! But you can see that the successful parse was
 For now, let's complete the grammar:
 
 ```
-field = { ('0'..'9' | "." | "-")+ }
+field = { (ASCII_DIGIT | "." | "-")+ }
 record = { field ~ ("," ~ field)* }
-file = { soi ~ (record ~ ("\r\n" | "\n"))* ~ eoi }
+file = { SOI ~ (record ~ ("\r\n" | "\n"))* ~ EOI }
 ```
 
 The tilde `~` means "and then", so that `"abc" ~ "def"` matches `abc` followed
 by `def`. (For this grammar, `"abc" ~ "def"` is exactly the same as `"abcdef"`,
 although this is not true in general; see [a later chapter about
-`whitespace`].)
+`WHITESPACE`].)
 
-In addition to literal strings (`"\r\n"`) and character ranges (`'0'..'9'`),
-rules can contain other rules. For instance, a `record` is a `field`, and
-optionally a comma `,` and then another `field` repeated as many times as
-necessary. The asterisk `*` is just like the plus sign `+`, except the pattern
-is optional: it can occur any number of times at all (zero or more).
+In addition to literal strings (`"\r\n"`) and built-ins (`ASCII_DIGIT`), rules
+can contain other rules. For instance, a `record` is a `field`, and optionally
+a comma `,` and then another `field` repeated as many times as necessary. The
+asterisk `*` is just like the plus sign `+`, except the pattern is optional: it
+can occur any number of times at all (zero or more).
 
-There are two more rules that we haven't defined: `soi` and `eoi` are two
+There are two more rules that we haven't defined: `SOI` and `EOI` are two
 special rules that match, respectively, the *start of input* and the *end of
-input*. Without `eoi`, the `file` rule would gladly parse an invalid file! It
+input*. Without `EOI`, the `file` rule would gladly parse an invalid file! It
 would just stop as soon as it found the first invalid character and report a
 successful parse, possibly consisting of nothing at all!
 
@@ -170,10 +168,16 @@ fn main() {
     let mut record_count: u64 = 0;
 
     for record in file.into_inner() {
-        record_count += 1;
+        match record.as_rule() {
+            Rule::record => {
+                record_count += 1;
 
-        for field in record.into_inner() {
-            field_sum += field.as_str().parse::<f64>().unwrap();
+                for field in record.into_inner() {
+                    field_sum += field.as_str().parse::<f64>().unwrap();
+                }
+            }
+            Rule::EOI => (),
+            _ => unreachable!(),
         }
     }
 
@@ -202,9 +206,9 @@ Number of records: 5
 ```
 
 [Cargo]: https://doc.rust-lang.org/cargo/
-[a later chapter about `whitespace`]: ../grammars/syntax.html
+[a later chapter about `WHITESPACE`]: ../grammars/syntax.html
 [`File`]: https://doc.rust-lang.org/std/fs/struct.File.html
 [`expect`]: https://doc.rust-lang.org/std/option/enum.Option.html#method.expect
-[`pest::iterators::Pair`]: https://docs.rs/pest/1.0/pest/iterators/struct.Pair.html
-[`Pair`]: https://docs.rs/pest/1.0/pest/iterators/struct.Pair.html
+[`pest::iterators::Pair`]: https://docs.rs/pest/2.0/pest/iterators/struct.Pair.html
+[`Pair`]: https://docs.rs/pest/2.0/pest/iterators/struct.Pair.html
 [iterator]: https://doc.rust-lang.org/std/iter/index.html

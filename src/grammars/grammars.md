@@ -18,8 +18,6 @@ use pest::Parser;
 #[derive(Parser)]
 #[grammar = "parser/grammar.pest"] // relative to project `src`
 struct MyParser;
-
-const _GRAMMAR: &str = include_str!("grammar.pest"); // relative to this file
 ```
 
 Whenever you compile this file, `pest` will automatically use the grammar file
@@ -38,15 +36,6 @@ exists during compilation. However, you can use `Rules` just like any other
 enum, and you can use `parse(...)` through the [`Pairs`] interface described in
 the [Parser API chapter](../parser_api.html).
 
-### Technical note: `_GRAMMAR`
-
-Rust uses "incremental compilation" to avoid recompiling files that haven't
-changed. Unfortunately, this means that changing the grammar file won't update
-the generated parser, because the Rust source code hasn't changed!
-
-To declare that the Rust source code depends on the grammar file, we copy that
-grammar directly into an unused string constant using [`include_str!`].
-
 ## Warning about PEGs!
 
 Parsing expression grammars look quite similar to other parsing tools you might
@@ -61,7 +50,7 @@ tripped up by comparisons to other tools.
 If you have used other parsing tools before, be sure to read the next section
 carefully. We'll mention some common mistakes regarding PEGs.
 
-[`Pairs`]: https://docs.rs/pest/1.0/pest/iterators/struct.Pairs.html
+[`Pairs`]: https://docs.rs/pest/2.0/pest/iterators/struct.Pairs.html
 [`include_str!`]: https://doc.rust-lang.org/std/macro.include_str.html
 [eager]: peg.html#eagerness
 [non-backtracking]: peg.html#non-backtracking

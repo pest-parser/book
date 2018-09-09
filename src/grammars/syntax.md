@@ -51,14 +51,14 @@ a caret: `^"text"`.
 A single **character in a range** is written as two single-quoted characters,
 separated by two dots: `'0'..'9'`.
 
-You can match **any single character** at all with the special rule `any`. This
+You can match **any single character** at all with the special rule `ANY`. This
 is equivalent to `'\u{00}'..'\u{10FFFF}'`, any single Unicode character.
 
 ```
 "a literal string"
 ^"ASCII case-insensitive string"
 'a'..'z'
-any
+ANY
 ```
 
 Finally, you can **refer to other rules** by writing their names directly, and
@@ -141,9 +141,9 @@ expression is **optional** &mdash; it can occur zero or one times.
            (^"optional")?
 ```
 
-Note that `expr*` will always succeed, because it is allowed to match zero
-times. For example, if followed by a choice, as in `expr* | otherwise`, the
-rule `otherwise` will never be reached!
+Note that `expr*` and `expr?` will always succeed, because they are allowed to
+match zero times. For example, `"a"* ~ "b"?` will succeed even on an empty
+input string.
 
 Other **numbers of repetitions** can be indicated using curly brackets:
 
@@ -184,7 +184,7 @@ not_space_or_tab = {
         " "           //     a space
         | "\t"        //     or a tab
     )
-    ~ any             // then consume one character
+    ~ ANY             // then consume one character
 }
 
 triple_quoted_string = {
@@ -194,7 +194,7 @@ triple_quoted_string = {
 }
 triple_quoted_character = {
     !"'''"        // if the following text is not three apostrophes
-    ~ any         // then consume one character
+    ~ ANY         // then consume one character
 }
 ```
 
@@ -235,7 +235,7 @@ my_rule = {
 
 ## Start and end of input
 
-The rules `soi` and `eoi` match the *start* and *end* of the input string,
+The rules `SOI` and `EOI` match the *start* and *end* of the input string,
 respectively. Neither consumes any text. They only indicate whether the parser
 is currently at one edge of the input.
 
@@ -245,9 +245,9 @@ parse):
 
 ```
 main = {
-    soi
+    SOI
     ~ (...)
-    ~ eoi
+    ~ EOI
 }
 ```
 
@@ -257,14 +257,14 @@ Many languages and text formats allow arbitrary whitespace and comments between
 logical tokens. For instance, Rust considers `4+5` equivalent to `4 + 5` and `4
 /* comment */ + 5`.
 
-The **optional rules `whitespace` and `comment`** implement this behaviour. If
+The **optional rules `WHITESPACE` and `COMMENT`** implement this behaviour. If
 either (or both) are defined, they will be implicitly inserted at every
 [sequence] and between every [repetition] (except in [atomic rules]).
 
 ```
 expression = { "4" ~ "+" ~ "5" }
-whitespace = _{ " " }
-comment = _{ "/*" ~ (!"*/" ~ any)* ~ "*/" }
+WHITESPACE = _{ " " }
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
     matches
 "4+5"
 "4 + 5"
@@ -272,7 +272,7 @@ comment = _{ "/*" ~ (!"*/" ~ any)* ~ "*/" }
 "4 /* comment */ + 5"
 ```
 
-As you can see, `whitespace` and `comment` are run repeatedly, so they need
+As you can see, `WHITESPACE` and `COMMENT` are run repeatedly, so they need
 only match a single whitespace character or a single comment. The grammar above
 is equivalent to:
 
@@ -283,24 +283,24 @@ expression = {
     ~ "5"
 }
 ws = _{ " " }
-com = _{ "/*" ~ (!"*/" ~ any)* ~ "*/" }
+com = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 ```
 
 Note that implicit whitespace is *not* inserted at the beginning or end of rules
 &mdash; for instance, `expression` does *not* match `" 4+5 "`. If you want to
 include implicit whitespace at the beginning and end of a rule, you will need to
-sandwich it between two empty rules (often `soi` and `eoi` [as above]):
+sandwich it between two empty rules (often `SOI` and `EOI` [as above]):
 
 ```
-whitespace = _{ " " }
+WHITESPACE = _{ " " }
 expression = { "4" ~ "+" ~ "5" }
-main = { soi ~ expression ~ eoi }
+main = { SOI ~ expression ~ EOI }
     matches
 "4+5"
 "  4 + 5   "
 ```
 
-(Be sure to mark the `whitespace` and `comment` rules as [silent] unless you
+(Be sure to mark the `WHITESPACE` and `COMMENT` rules as [silent] unless you
 want to see them included inside other rules!)
 
 [sequence]: #sequence
@@ -346,7 +346,7 @@ atomic rules produce inner tokens as normal.
 
 Atomic rules are useful when the text you are parsing ignores whitespace except
 in a few cases, such as literal strings. In this instance, you can write
-`whitespace` or `comment` rules, then make your string-matching rule be atomic.
+`WHITESPACE` or `COMMENT` rules, then make your string-matching rule be atomic.
 
 [implicit whitespace]: #implicit-whitespace
 [repetition operators]: #repetition
@@ -375,8 +375,8 @@ expr = !{ ... }
 ## The stack (WIP)
 
 `pest` maintains a stack that can be manipulated directly from the grammar. An
-expression can be matched and pushed onto the stack with the keyword `push`,
-then later matched exactly with the keywords `peek` and `pop`.
+expression can be matched and pushed onto the stack with the keyword `PUSH`,
+then later matched exactly with the keywords `PEEK` and `POP`.
 
 Using the stack allows *the exact same text* to be matched multiple times,
 rather than *the same pattern*.
@@ -385,8 +385,8 @@ For example,
 
 ```
 same_text = {
-    push( "a" | "b" | "c" )
-    ~ pop
+    PUSH( "a" | "b" | "c" )
+    ~ POP
 }
 same_pattern = {
     ("a" | "b" | "c")
@@ -413,15 +413,15 @@ occurred before the quotation mark. We can do this using the stack:
 
 ```
 raw_string = {
-    "r" ~ push("#"*) ~ "\""    // push the number signs onto the stack
+    "r" ~ PUSH("#"*) ~ "\""    // push the number signs onto the stack
     ~ raw_string_interior
-    ~ "\"" ~ pop               // match a quotation mark and the number signs
+    ~ "\"" ~ POP               // match a quotation mark and the number signs
 }
 raw_string_interior = {
     (
-        !("\"" ~ peek)    // unless the next character is a quotation mark
+        !("\"" ~ PEEK)    // unless the next character is a quotation mark
                           // followed by the correct amount of number signs,
-        ~ any             // consume one character
+        ~ ANY             // consume one character
     )*
 }
 ```
@@ -436,14 +436,14 @@ raw_string_interior = {
 | `bar = _{ ... }` | [silent]                          | `qux = ${ ... }`        | [compound-atomic]    |
 |                  |                                   | `plugh = !{ ... }`      | [non-atomic]         |
 | `"abc"`          | [exact string]                    | `^"abc"`                | [case insensitive]   |
-| `'a'..'z'`       | [character range]                 | `any`                   | [any character]      |
+| `'a'..'z'`       | [character range]                 | `ANY`                   | [any character]      |
 | `foo ~ bar`      | [sequence]                        | <code>baz \| qux</code> | [ordered choice]     |
 | `foo*`           | [zero or more]                    | `bar+`                  | [one or more]        |
 | `baz?`           | [optional]                        | `qux{n}`                | [exactly *n*]        |
 | `qux{m, n}`      | [between *m* and *n* (inclusive)] |                         |                      |
 | `&foo`           | [positive predicate]              | `!bar`                  | [negative predicate] |
-| `push(baz)`      | [match and push]                  |                         |                      |
-| `pop`            | [match and pop]                   | `peek`                  | [match without pop]  |
+| `PUSH(baz)`      | [match and push]                  |                         |                      |
+| `POP`            | [match and pop]                   | `PEEK`                  | [match without pop]  |
 
 [regular rule]: #syntax-of-pest-parsers
 [silent]: #silent-and-atomic-rules
