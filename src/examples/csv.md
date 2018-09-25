@@ -127,15 +127,10 @@ Now we're ready to finish the program. We will use [`File`] to read the CSV
 file into memory. We'll also be messy and use [`expect`] everywhere.
 
 ```rust
-use std::fs::File;
-use std::io::Read;
+use std::fs;
 
 fn main() {
-    let mut unparsed_file = String::new();
-    File::open("numbers.csv")
-        .expect("cannot open file")
-        .read_to_string(&mut unparsed_file)
-        .expect("cannot read file");
+    let unparsed_file = fs::read_to_string("numbers.csv").expect("cannot read file");
 
     // ...
 }
