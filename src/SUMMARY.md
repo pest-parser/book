@@ -3,7 +3,7 @@
 - [Introduction](intro.md)
     - [Example: CSV](examples/csv.md)
 - [Parser API](parser_api.md)
-    - [Example: INI (WIP)](examples/ini.md)
+    - [Example: INI](examples/ini.md)
 - [Grammars](grammars/grammars.md)
     - [Parsing expression grammars](grammars/peg.md)
     - [Syntax of pest parsers](grammars/syntax.md)
