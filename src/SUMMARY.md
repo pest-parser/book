@@ -12,6 +12,3 @@
 - [Operator precedence (WIP)](precedence.md)
     - [Example: Calculator (WIP)](examples/calculator.md)
 - [Final project: Awk clone (WIP)](examples/awk.md)
-- [Bonus project: Rust grammar (WIP)](examples/rust/setup.md)
-    - [Literals](examples/rust/literals.md)
-    - [Syntax](examples/rust/syntax.md)
