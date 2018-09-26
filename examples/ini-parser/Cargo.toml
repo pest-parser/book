@@ -1,0 +1,8 @@
+[package]
+name = "ini-parser"
+version = "0.1.0"
+authors = ["wirelyre <wirelyre@gmail.com>"]
+
+[dependencies]
+pest = "2.0"
+pest_derive = "2.0"
