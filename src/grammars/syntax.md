@@ -2,7 +2,7 @@
 
 `pest` grammars are lists of rules. Rules are defined like this:
 
-```
+```pest
 my_rule = { ... }
 
 another_rule = {        // comments are preceded by two slashes
@@ -16,7 +16,7 @@ to be Rust keywords.
 The left curly bracket `{` defining a rule can be preceded by [symbols that
 affect its operation]:
 
-```
+```pest
 silent_rule = _{ ... }
 atomic_rule = @{ ... }
 ```
@@ -64,7 +64,7 @@ ANY
 Finally, you can **refer to other rules** by writing their names directly, and
 even **use rules recursively**:
 
-```
+```pest
 my_rule = { "slithy " ~ other_rule }
 other_rule = { "toves" }
 recursive_rule = { "mimsy " ~ recursive_rule }
@@ -106,13 +106,15 @@ if `first` matched some input before it failed. When encountering a parse
 failure, the engine will try the next ordered choice as though no input had
 been matched. Failed parses never consume any input.
 
-```
+```pest
 start = { "Beware " ~ creature }
 creature = {
     ("the " ~ "Jabberwock")
     | ("the " ~ "Jubjub bird")
 }
+```
 
+```
 "Beware the Jubjub bird"
  ^ (start) Parses via the second choice of `creature`,
            even though the first choice matched "the " successfully.
@@ -178,7 +180,7 @@ a kind of "NOT" statement: "the input string must match `bar` but NOT `foo`".
 
 This leads to the common idiom meaning "any character but":
 
-```
+```pest
 not_space_or_tab = {
     !(                // if the following text is not
         " "           //     a space
@@ -221,12 +223,14 @@ Larger expressions can be repeated by surrounding them with parentheses.
 Repetition operators have the highest precedence, followed by predicate
 operators, the sequence operator, and finally ordered choice.
 
-```
+```pest
 my_rule = {
     "a"* ~ "b"?
     | &"b"+ ~ "a"
 }
-    equivalent to
+
+// equivalent to
+
 my_rule = {
       ( ("a"*) ~ ("b"?) )
     | ( (&("b"+)) ~ "a" )
@@ -243,7 +247,7 @@ For example, to ensure that a rule matches the entire input, where any syntax
 error results in a failed parse (rather than a successful but incomplete
 parse):
 
-```
+```pest
 main = {
     SOI
     ~ (...)
@@ -261,11 +265,13 @@ The **optional rules `WHITESPACE` and `COMMENT`** implement this behaviour. If
 either (or both) are defined, they will be implicitly inserted at every
 [sequence] and between every [repetition] (except in [atomic rules]).
 
-```
+```pest
 expression = { "4" ~ "+" ~ "5" }
 WHITESPACE = _{ " " }
 COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
-    matches
+```
+
+```
 "4+5"
 "4 + 5"
 "4  +     5"
@@ -276,7 +282,7 @@ As you can see, `WHITESPACE` and `COMMENT` are run repeatedly, so they need
 only match a single whitespace character or a single comment. The grammar above
 is equivalent to:
 
-```
+```pest
 expression = {
     "4"   ~ (ws | com)*
     ~ "+" ~ (ws | com)*
@@ -291,11 +297,13 @@ Note that implicit whitespace is *not* inserted at the beginning or end of rules
 include implicit whitespace at the beginning and end of a rule, you will need to
 sandwich it between two empty rules (often `SOI` and `EOI` [as above]):
 
-```
+```pest
 WHITESPACE = _{ " " }
 expression = { "4" ~ "+" ~ "5" }
 main = { SOI ~ expression ~ EOI }
-    matches
+```
+
+```
 "4+5"
 "  4 + 5   "
 ```
@@ -318,7 +326,7 @@ silent, it will never appear in a parse result.
 To make a silent rule, precede the left curly bracket `{` with a low line
 (underscore) `_`.
 
-```
+```pest
 silent = _{ ... }
 ```
 
@@ -330,7 +338,7 @@ silent = _{ ... }
 `pest` has two kinds of atomic rules: **atomic** and **compound atomic**. To
 make one, write the sigil before the left curly bracket `{`.
 
-```
+```pest
 atomic = @{ ... }
 compound_atomic = ${ ... }
 ```
@@ -367,7 +375,7 @@ This is where you use a **non-atomic** rule. Write an exclamation mark `!` in
 front of the defining curly bracket. The rule will run as non-atomic, whether
 it is called from an atomic rule or not.
 
-```
+```pest
 fstring = @{ "\"" ~ ... }
 expr = !{ ... }
 ```
@@ -383,7 +391,7 @@ rather than *the same pattern*.
 
 For example,
 
-```
+```pest
 same_text = {
     PUSH( "a" | "b" | "c" )
     ~ POP
@@ -411,7 +419,7 @@ const raw_str: &str = r###"
 When parsing a raw string, we have to keep track of how many number signs `#`
 occurred before the quotation mark. We can do this using the stack:
 
-```
+```pest
 raw_string = {
     "r" ~ PUSH("#"*) ~ "\""    // push the number signs onto the stack
     ~ raw_string_interior

@@ -52,7 +52,7 @@ code! This is a very important attribute.
 into Rust code. Let's write a grammar for a CSV file that contains numbers.
 Create a new file named `src/csv.pest` with a single line:
 
-```
+```pest
 field = { (ASCII_DIGIT | "." | "-")+ }
 ```
 
@@ -98,7 +98,7 @@ Yikes! That's a complicated type! But you can see that the successful parse was
 
 For now, let's complete the grammar:
 
-```
+```pest
 field = { (ASCII_DIGIT | "." | "-")+ }
 record = { field ~ ("," ~ field)* }
 file = { SOI ~ (record ~ ("\r\n" | "\n"))* ~ EOI }

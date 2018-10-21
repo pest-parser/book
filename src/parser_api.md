@@ -3,7 +3,7 @@
 `pest` provides several ways of accessing the results of a successful parse.
 The examples below use the following grammar:
 
-```
+```pest
 number = { ASCII_DIGIT+ }                // one or more decimal digits
 enclosed = { "(.." ~ number ~ "..)" }    // for instance, "(..6472..)"
 sum = { number ~ " + " ~ number }        // for instance, "1362 + 12"
@@ -154,7 +154,7 @@ assert_eq!(match2.as_str(), "1362");
 Sometimes rules will not have a known number of sub-rules, such as when a
 sub-rule is repeated with an asterisk `*`:
 
-```
+```pest
 list = { number* }
 ```
 
@@ -198,7 +198,7 @@ While the `Result` from `Parser::parse(...)` might very well be an error on
 invalid input, `Pair` and `Pairs` often have more subtle behavior. For
 instance, with this grammar:
 
-```
+```pest
 number = { ASCII_DIGIT+ }
 sum = { number ~ " + " ~ number }
 ```

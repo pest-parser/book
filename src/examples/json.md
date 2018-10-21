@@ -81,7 +81,7 @@ strings (where it must be parsed separately) and between digits in numbers
 (where it is not allowed). This makes it a good fit for `pest`'s [implicit
 whitespace]. In `src/json.pest`:
 
-```
+```pest
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
 ```
 
@@ -89,7 +89,7 @@ WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
 write the grammar directly from that page. Let's write `object` as a sequence
 of `pair`s separated by commas `,`.
 
-```
+```pest
 object = {
     "{" ~ "}" |
     "{" ~ pair ~ ("," ~ pair)* ~ "}"
@@ -110,7 +110,7 @@ such as in `[0, 1,]`, is illegal in JSON.
 Now we can write `value`, which represents any single data type. We'll mimic
 our AST by writing `boolean` and `null` as separate rules.
 
-```
+```pest
 value = _{ object | array | string | number | boolean | null }
 
 boolean = { "true" | "false" }
@@ -129,7 +129,7 @@ except the ones given in parentheses. In this case, any character is legal
 inside a string, except for double quote `"` and backslash <code>\\</code>,
 which require separate parsing logic.
 
-```
+```pest
 string = ${ "\"" ~ inner ~ "\"" }
 inner = @{ char* }
 char = {
@@ -148,7 +148,7 @@ Numbers have four logical parts: an optional sign, an integer part, an optional
 fractional part, and an optional exponent. We'll mark `number` atomic so that
 whitespace cannot appear between its parts.
 
-```
+```pest
 number = @{
     "-"?
     ~ ("0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*)
@@ -162,7 +162,7 @@ of a JSON file is a single object or array. We'll mark this rule [silent], so
 that a parsed JSON file contains only two token pairs: the parsed value itself,
 and [the `EOI` rule].
 
-```
+```pest
 json = _{ SOI ~ (object | array) ~ EOI }
 ```
 

@@ -4,7 +4,7 @@ Parsing expression grammars (PEGs) are simply a strict representation of the
 simple imperative code that you would write if you were writing a parser by
 hand.
 
-```
+```pest
 number = {            // To recognize a number...
     ASCII_DIGIT+      //   take as many ASCII digits as possible (at least one).
 }
@@ -21,7 +21,7 @@ comments above.
 
 When a [repetition] PEG expression is run on an input string,
 
-```
+```pest
 ASCII_DIGIT+      // one or more characters from '0' to '9'
 ```
 
@@ -87,7 +87,7 @@ The engine will not back up and try again.
 
 Consider this grammar, matching on the string `"frumious"`:
 
-```
+```pest
 word = {     // to recognize a word...
     ANY*     //   take any character, zero or more times...
     ~ ANY    //   followed by any character
