@@ -2,3 +2,6 @@
 title = "A thoughtful introduction to the pest parser"
 description = "An introduction to the pest parser by implementing a Rust grammar subset"
 author = "Dragoș Tiselice"
+
+[output.html]
+additional-js = ["highlight-pest.js"]

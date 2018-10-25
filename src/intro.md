@@ -13,7 +13,7 @@ abstractions, `pest` parsers can be **very fast**.
 Here is the complete grammar for a simple calculator [developed in a (currently
 unwritten) later chapter](examples/calculator.html):
 
-```
+```pest
 num = @{ int ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ int)? }
     int = { ("+" | "-")? ~ ASCII_DIGIT+ }
 

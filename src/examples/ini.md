@@ -42,7 +42,7 @@ recognize a single character in that set. The built-in rule
 `ASCII_ALPHANUMERIC` is a shortcut to represent any uppercase or lowercase
 ASCII letter, or any digit.
 
-```
+```pest
 char = { ASCII_ALPHANUMERIC | "." | "_" | "/" }
 ```
 
@@ -51,14 +51,14 @@ be empty (as in the line `ip=` above). That is, the former consist of one or
 more characters, `char+`; and the latter consist of zero or more characters,
 `char*`. We separate the meaning into two rules:
 
-```
+```pest
 name = { char+ }
 value = { char* }
 ```
 
 Now it's easy to express the two kinds of input lines.
 
-```
+```pest
 section = { "[" ~ name ~ "]" }
 property = { name ~ "=" ~ value }
 ```
@@ -67,7 +67,7 @@ Finally, we need a rule to represent an entire input file. The expression
 `(section | property)?` matches `section`, `property`, or else nothing. Using
 the built-in rule `NEWLINE` to match line endings:
 
-```
+```pest
 file = {
     SOI ~
     ((section | property)? ~ NEWLINE)* ~
@@ -193,7 +193,7 @@ If defined, it will be implicitly run, as many times as possible, at every
 tilde `~` and between every repetition (for example, `*` and `+`). For our INI
 parser, only spaces are legal whitespace.
 
-```
+```pest
 WHITESPACE = _{ " " }
 ```
 
@@ -209,7 +209,7 @@ char+ }`. Rules that *are* whitespace-sensitive need to be marked [*atomic*]
 with a leading at sign `@{ ... }`. In atomic rules, automatic whitespace
 handling is disabled, and interior rules are silent.
 
-```
+```pest
 name = @{ char+ }
 value = @{ char* }
 ```
