@@ -20,6 +20,7 @@ document_root=/var/www/example.org
 document_root=/var/www/example.com
 ip=
 interface=eth1
+
 ```
 
 Each line contains a **key and value** separated by an equals sign; or contains
