@@ -56,12 +56,18 @@ more characters, `char+`; and the latter consist of zero or more characters,
 name = { char+ }
 value = { char* }
 ```
+These two must be separated by an  `=` sign that can be surrounded by an arbitrary 
+number of whitespaces. 
+
+```pest
+sep = { " "* ~ "=" ~ " "* }
+```
 
 Now it's easy to express the two kinds of input lines.
 
 ```pest
 section = { "[" ~ name ~ "]" }
-property = { name ~ "=" ~ value }
+property = { name ~ sep ~ value }
 ```
 
 Finally, we need a rule to represent an entire input file. The expression
