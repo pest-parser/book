@@ -152,7 +152,7 @@ whitespace cannot appear between its parts.
 number = @{
     "-"?
     ~ ("0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*)
-    ~ ("." ~ ASCII_DIGIT*)?
+    ~ ("." ~ ASCII_DIGIT+)?
     ~ (^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+)?
 }
 ```
