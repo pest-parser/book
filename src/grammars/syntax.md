@@ -368,7 +368,7 @@ the inside expression can still have whitespace like normal.
 
 ```python
 #!/bin/env python3
-print(f"The answer is {2 + 4}.")
+print("The answer is {2 + 4}.")
 ```
 
 This is where you use a **non-atomic** rule. Write an exclamation mark `!` in
