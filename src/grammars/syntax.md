@@ -368,8 +368,11 @@ the inside expression can still have whitespace like normal.
 
 ```python
 #!/bin/env python3
-print("The answer is {2 + 4}.")
+print(f"The answer is {2 + 4}.")
 ```
+
+The `f"..."` string above ([f-strings][f-strings]) is valid Python
+syntax since Python 3.6.
 
 This is where you use a **non-atomic** rule. Write an exclamation mark `!` in
 front of the defining curly bracket. The rule will run as non-atomic, whether
@@ -474,3 +477,4 @@ raw_string_interior = {
 [match and push]: #the-stack-wip
 [match and pop]: #the-stack-wip
 [match without pop]: #the-stack-wip
+[f-strings]: https://www.python.org/dev/peps/pep-0498
