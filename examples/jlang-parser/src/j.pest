@@ -2,22 +2,40 @@ program = _{ SOI ~ "\n"* ~ (stmt ~ "\n"+) * ~ stmt? ~ EOI }
 
 stmt = _{ expr }
 
-expr = { assgmtExpr | monadicExpr | dyadicExpr | string | terms }
+expr = {
+      assgmtExpr
+    | monadicExpr
+    | dyadicExpr
+    | string
+    | terms
+}
+
 monadicExpr = { action ~ expr }
+
 dyadicExpr = { (monadicExpr | terms) ~ action ~ expr }
 
 assgmtExpr = { ident ~ "=:" ~ expr }
+
 terms = { term+ }
+
 term = _{ decimal | integer | ident | "(" ~ expr ~ ")" }
 
 action = { verb ~ adverb* }
-verb = { ">:" | "*:" | "-" | "%" | "#" | ">." |
-          "+" | "*" | "<"  | "=" | "^" | "|" | ">" | "$" }
+
+verb = {
+    ">:" | "*:" | "-"  | "%" | "#" | ">."
+  | "+"  | "*"  | "<"  | "=" | "^" | "|"
+  | ">"  | "$"
+}
+
 adverb = { "/" }
 
 integer = @{ "_"? ~ ASCII_DIGIT+ }
+
 decimal = @{ "_"? ~ ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT* }
+
 ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
 string = @{ "'" ~ ( "''" | (!"'" ~ ANY) )* ~ "'" }
 
 WHITESPACE = _{ " " | "\t" }
