@@ -1,68 +1,75 @@
-# Example: the J language
+# Example: The J language
 
-The [J language] is an array programming language influenced by APL. 
-Arrays are multi-dimensional; each has an integer *rank* specifying the 
-number of its dimensions, in addition to a single-dimension array *shape* 
-specifying the count of each of those dimensions.
+The J language is an array programming language influenced by APL.
+In J, operations on individual numbers (`2 * 3`) can just as easily 
+be applied to entire lists of numbers (`2 * 3 4 5`, returning `6 8 10`).
 
-Operations on arrays (and scalars) are referred to as *verbs*; verbs can 
-be modified by *adverbs* and composed together as higher-order functions. 
-Verbs are either monadic (taking a single argument or an array of arguments 
-to its right) or dyadic (taking two arguments, one on either side).
+Operators in J are referred to as *verbs*.
+Verbs are either *monadic* (taking a single argument, such as `*: 3`, "3 squared")
+or *dyadic* (taking two arguments, one on either side, such as `5 - 4`, "5 minus 4").
 
 Here's an example of a J program:
 
 ```j
-'Some array operations...'
+'A string'
+
 *: 1 2 3 4
+
 matrix =: 2 3 $ 5 + 2 3 4 5 6 7
 10 * matrix
+
 1 + 10 20 30
 1 2 3 + 10
+
 residues =: 2 | 0 1 2 3 4 5 6 7
 residues
 ```
 
-Using a J [compiler] or [interpreter] to compile/run the above program 
+Using J's [interpreter] to run the above program
 yields the following on standard out:
 
 ```
-Some array operations...
+A string
+
 1 4 9 16
+
  70  80  90
 100 110 120
+
 11 21 31
 11 12 13
+
 0 1 0 1 0 1 0 1
 ```
 
 In this section we'll write a grammar for a subset of J. We'll then walk 
 through a parser that builds an AST by iterating over the rules that 
-pest gives us.
+`pest` gives us. You can find the full source code
+[within this book's repository].
 
 ## The Grammar
 
-We'll build up a pest grammar section by section, starting with 
+We'll build up a grammar section by section, starting with
 the program rule:
 
 ```pest
 program = _{ SOI ~ "\n"* ~ (stmt ~ "\n"+) * ~ stmt? ~ EOI }
 ```
 
-Each J program contains statements delimited by one or more newlines. 
-Notice the leading underscore, which tells pest to [silence] the `program` 
-rule -- we don't want `program` to appear as a token in the parse stream, 
+Each J program contains statements delimited by one or more newlines.
+Notice the leading underscore, which tells `pest` to [silence] the `program`
+rule &mdash; we don't want `program` to appear as a token in the parse stream,
 we want the underlying statements instead.
 
 A statement is simply an expression, and since there's only one such 
 possibility, we also [silence] this `stmt` rule as well, and thus our 
-parser will receive an iterator of underlying `expr`s from pest:
+parser will receive an iterator of underlying `expr`s:
 
 ```pest
 stmt = _{ expr }
 ```
 
-An expression could be an assignment to a variable identifier, a monadic 
+An expression can be an assignment to a variable identifier, a monadic
 expression, a dyadic expression, a single string, or an array of terms:
 
 ```pest
@@ -75,14 +82,18 @@ expr = {
 }
 ```
 
-A monadic expression is an action with a right operand, a dyadic 
-expression is an action with both left and right operands, and 
-assignments associate identifiers with expressions:
+A monadic expression consists of a verb with its sole operand on the right;
+a dyadic expression has operands on either side of the verb.
+Assignment expressions associate identifiers with expressions.
+
+In J, there is no operator precedence &mdash; evaluation is right-associative
+(proceeding from right to left), with parenthesized expressions evaluated
+first.
 
 ```pest
-monadicExpr = { action ~ expr }
+monadicExpr = { verb ~ expr }
 
-dyadicExpr = { (monadicExpr | terms) ~ action ~ expr }
+dyadicExpr = { (monadicExpr | terms) ~ verb ~ expr }
 
 assgmtExpr = { ident ~ "=:" ~ expr }
 ```
@@ -98,21 +109,15 @@ terms = { term+ }
 term = _{ decimal | integer | ident | "(" ~ expr ~ ")" }
 ```
 
-Verbs can be modified by adverbs; in this grammar that notion is 
-encapsulated in the `action` rule. A few of J's verbs, and one of J's 
-adverbs, is defined in this grammar; J's [full vocabulary] is much 
-more extensive.
+A few of J's verbs are defined in this grammar;
+J's [full vocabulary] is much more extensive.
 
 ```pest
-action = { verb ~ adverb* }
-
 verb = {
     ">:" | "*:" | "-"  | "%" | "#" | ">."
   | "+"  | "*"  | "<"  | "=" | "^" | "|"
   | ">"  | "$"
 }
-
-adverb = { "/" }
 ```
 
 Now we can get into lexing rules. Numbers in J are represented as 
@@ -123,10 +128,10 @@ with a letter, but can contain numbers thereafter. Strings are
 surrounded by single quotes; quotes themselves can be embedded by 
 escaping them with an additional quote.
 
-Notice how we use pest's `@` modifier to require *[atomic]ity* for 
-each of these rules, meaning [implicit whitespace] is forbidden, and 
-that interior rules (i.e., `ASCII_ALPHA` in `ident`) become [silent] -- 
-when our parser receives any of these tokens from pest, they will be terminal:
+Notice how we use `pest`'s `@` modifier to make each of these rules [atomic],
+meaning [implicit whitespace] is forbidden, and
+that interior rules (i.e., `ASCII_ALPHA` in `ident`) become [silent] &mdash;
+when our parser receives any of these tokens from, they will be terminal:
 
 ```pest
 integer = @{ "_"? ~ ASCII_DIGIT+ }
@@ -138,8 +143,9 @@ ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 string = @{ "'" ~ ( "''" | (!"'" ~ ANY) )* ~ "'" }
 ```
 
-Whitespace in J consists solely of spaces and tabs; newlines are significant 
-(they delimit statements) and so they are excluded from this rule:
+Whitespace in J consists solely of spaces and tabs. Newlines are
+significant because they delimit statements, so they are excluded
+from this rule:
 
 ```pest
 WHITESPACE = _{ " " | "\t" }
@@ -149,18 +155,17 @@ Finally, we must handle comments. Comments in J start with `NB.` and
 continue to the end of the line on which they are found. Critically, we must 
 not consume the newline at the end of the comment line; this is needed 
 to separate any statement that might precede the comment from the statement 
-on the succeeding line. We also omit [the `EOI` marker] from consumption here 
-for the same reason as it relates to parsing the program as a whole:
+on the succeeding line.
 
 ```pest
-COMMENT = _{ "NB." ~ ( !("\n" | EOI) ~ ANY)* }
+COMMENT = _{ "NB." ~ ( !"\n" ~ ANY)* }
 ```
 
 ## Parsing and AST Generation
 
-This section will walk through a parser that uses the pest grammar above. 
+This section will walk through a parser that uses the grammar above.
 Library includes and self-explanatory code are omitted here; you can find 
-the parser in its entirety within [this book's repository]. 
+the parser in its entirety [within this book's repository].
 
 First we'll enumerate the verbs defined in our grammar, distinguishing between 
 monadic and dyadic verbs. These enumerations will be be used as labels 
@@ -168,29 +173,29 @@ in our AST:
 
 ```rust
 pub enum MonadicVerb {
-    Increment = 1,
-    Square = 2,
-    Negate = 3,
-    Reciprocal = 4,
-    Tally = 5,
-    Ceiling = 6,
-    ShapeOf = 7,
+    Increment,
+    Square,
+    Negate,
+    Reciprocal,
+    Tally,
+    Ceiling,
+    ShapeOf,
 }
 
 pub enum DyadicVerb {
-    Plus = 1,
-    Times = 2,
-    LessThan = 3,
-    LargerThan = 4,
-    Equal = 5,
-    Minus = 6,
-    Divide = 7,
-    Power = 8,
-    Residue = 9,
-    Copy = 10,
-    LargerOf = 11,
-    LargerOrEqual = 12,
-    Shape = 13,
+    Plus,
+    Times,
+    LessThan,
+    LargerThan,
+    Equal,
+    Minus,
+    Divide,
+    Power,
+    Residue,
+    Copy,
+    LargerOf,
+    LargerOrEqual,
+    Shape,
 }
 ```
 
@@ -211,10 +216,6 @@ pub enum AstNode {
         rhs: Box<AstNode>,
     },
     Terms(Vec<AstNode>),
-    Reduce {
-        verb: DyadicVerb,
-        expr: Box<AstNode>,
-    },
     IsGlobal {
         ident: String,
         expr: Box<AstNode>,
@@ -226,7 +227,7 @@ pub enum AstNode {
 
 To parse top-level statements in a J program, we have the following 
 `parse` function that accepts a J program in string form and passes it 
-to pest for parsing. We get back a sequence of pairs from pest. As specified 
+to `pest` for parsing. We get back a sequence of [`Pair`]s. As specified
 in the grammar, a statement can only consist of an expression, so the `match` 
 below parses each of those top-level expressions and wraps them in a `Print` 
 AST node in keeping with the J interpreter's REPL behavior:
@@ -249,22 +250,22 @@ pub fn parse(source: &str) -> Result<Vec<AstNode>, Error<Rule>> {
 }
 ```
 
-AST nodes are built from expressions by walking pest's pair iterator in 
+AST nodes are built from expressions by walking the [`Pair`] iterator in
 lockstep with the expectations set out in our grammar file. Common behaviors 
-are abstracted out into separate functions, such as `parse_monadic_action` 
-and `parse_dyadic_action`, and pairs representing expressions themselves are 
+are abstracted out into separate functions, such as `parse_monadic_verb`
+and `parse_dyadic_verb`, and [`Pair`]s representing expressions themselves are
 passed in recursive calls to `build_ast_from_expr`:
 
 ```rust
 fn build_ast_from_expr(pair: pest::iterators::Pair<Rule>) -> AstNode {
-     match pair.as_rule() {
+    match pair.as_rule() {
         Rule::expr => build_ast_from_expr(pair.into_inner().next().unwrap()),
         Rule::monadicExpr => {
             let mut pair = pair.into_inner();
-            let action = pair.next().unwrap();
+            let verb = pair.next().unwrap();
             let expr = pair.next().unwrap();
             let expr = build_ast_from_expr(expr);
-            parse_monadic_action(action, expr)
+            parse_monadic_verb(verb, expr)
         }
         // ... other cases elided here ...
     }
@@ -275,28 +276,26 @@ Dyadic verbs are mapped from their string representations to AST nodes in
 a straightforward way:
 
 ```rust
-fn parse_dyadic_action(pair: pest::iterators::Pair<Rule>, lhs: AstNode, rhs: AstNode) -> AstNode {
-    let mut pair = pair.into_inner();
-    let verb = pair.next().unwrap();
-    let adverbs: Vec<pest::iterators::Pair<_>> = pair.collect();
-
-    assert_eq!(adverbs.len(), 0);
-
-    let lhs = Box::new(lhs);
-    let rhs = Box::new(rhs);
-
-    match verb.as_str() {
-        "+" => AstNode::DyadicOp {
-            verb: DyadicVerb::Plus,
-            lhs,
-            rhs,
+fn parse_dyadic_verb(pair: pest::iterators::Pair<Rule>, lhs: AstNode, rhs: AstNode) -> AstNode {
+    AstNode::DyadicOp {
+        lhs: Box::new(lhs),
+        rhs: Box::new(rhs),
+        verb: match pair.as_str() {
+            "+" => DyadicVerb::Plus,
+            "*" => DyadicVerb::Times,
+            "-" => DyadicVerb::Minus,
+            "<" => DyadicVerb::LessThan,
+            "=" => DyadicVerb::Equal,
+            ">" => DyadicVerb::LargerThan,
+            "%" => DyadicVerb::Divide,
+            "^" => DyadicVerb::Power,
+            "|" => DyadicVerb::Residue,
+            "#" => DyadicVerb::Copy,
+            ">." => DyadicVerb::LargerOf,
+            ">:" => DyadicVerb::LargerOrEqual,
+            "$" => DyadicVerb::Shape,
+            _ => panic!("Unexpected dyadic verb: {}", pair.as_str()),
         },
-        "*" => AstNode::DyadicOp {
-            verb: DyadicVerb::Times,
-            lhs,
-            rhs,
-        },
-        // ... other cases elided here ...
     }
 }
 ```
@@ -304,27 +303,19 @@ fn parse_dyadic_action(pair: pest::iterators::Pair<Rule>, lhs: AstNode, rhs: Ast
 As are monadic verbs:
 
 ```rust
-fn parse_monadic_action(pair: pest::iterators::Pair<Rule>, expr: AstNode) -> AstNode {
-    let mut pair = pair.into_inner();
-    let verb = pair.next().unwrap();
-    let adverbs: Vec<pest::iterators::Pair<_>> = pair.collect();
-
-    match verb.as_str() {
-        ">:" => {
-            assert_eq!(adverbs.len(), 0);
-            AstNode::MonadicOp {
-                verb: MonadicVerb::Increment,
-                expr: Box::new(expr),
-            }
-        }
-        "*:" => {
-            assert_eq!(adverbs.len(), 0);
-            AstNode::MonadicOp {
-                verb: MonadicVerb::Square,
-                expr: Box::new(expr),
-            }
-        }
-        // ... other cases elided here ...
+fn parse_monadic_verb(pair: pest::iterators::Pair<Rule>, expr: AstNode) -> AstNode {
+    AstNode::MonadicOp {
+        verb: match pair.as_str() {
+            ">:" => MonadicVerb::Increment,
+            "*:" => MonadicVerb::Square,
+            "-" => MonadicVerb::Negate,
+            "%" => MonadicVerb::Reciprocal,
+            "#" => MonadicVerb::Tally,
+            ">." => MonadicVerb::Ceiling,
+            "$" => MonadicVerb::ShapeOf,
+            _ => panic!("Unsupported monadic verb: {}", pair.as_str()),
+        },
+        expr: Box::new(expr),
     }
 }
 ```
@@ -368,7 +359,7 @@ fn build_ast_from_term(pair: pest::iterators::Pair<Rule>) -> AstNode {
 ## Running the Parser
 
 We can now define a `main` function to pass J programs to our 
-pest-enabled parser:
+`pest`-enabled parser:
 
 ```rust
 fn main() {
@@ -399,7 +390,6 @@ x =: 100
 x - 1
 y =: x - 1
 y
-+ / 100 200 300
 ```
 
 We'll get the following abstract syntax tree on stdout when we run 
@@ -408,49 +398,45 @@ the parser:
 ```shell
 $ cargo run
   [ ... ]
-[Print(DyadicOp { verb: Power, lhs: DoublePrecisionFloat(-2.5), 
-    rhs: Integer(3)}), 
- Print(MonadicOp { verb: Square, expr: DoublePrecisionFloat(4.8) }),
- Print(IsGlobal { ident: "title", expr: Str("Spinning at the Boundary") }),
- Print(MonadicOp { verb: Square, expr: Terms([Integer(-1), 
-    Integer(2), Integer(-3), Integer(4)]) }),
- Print(DyadicOp { verb: Plus, lhs: Terms([Integer(1), Integer(2), Integer(3)]),
-    rhs: Terms([Integer(10), Integer(20), Integer(30)]) })
- Print(DyadicOp { verb: Plus, lhs: Integer(1), rhs: Terms([Integer(10), 
+[Print(DyadicOp { verb: Power, lhs: DoublePrecisionFloat(-2.5),
+    rhs: Integer(3) }),
+Print(MonadicOp { verb: Square, expr: DoublePrecisionFloat(4.8) }),
+Print(IsGlobal { ident: "title", expr: Str("Spinning at the Boundary") }),
+Print(MonadicOp { verb: Square, expr: Terms([Integer(-1), Integer(2),
+    Integer(-3), Integer(4)]) }),
+Print(DyadicOp { verb: Plus, lhs: Terms([Integer(1), Integer(2), Integer(3)]),
+    rhs: Terms([Integer(10), Integer(20), Integer(30)]) }),
+Print(DyadicOp { verb: Plus, lhs: Integer(1), rhs: Terms([Integer(10),
     Integer(20), Integer(30)]) }),
- Print(DyadicOp { verb: Plus, lhs: Terms([Integer(1), Integer(2), Integer(3)]), 
+Print(DyadicOp { verb: Plus, lhs: Terms([Integer(1), Integer(2), Integer(3)]),
     rhs: Integer(10) }),
- Print(DyadicOp { verb: Residue, lhs: Integer(2), rhs: Terms([Integer(0), 
-    Integer(1), Integer(2), Integer(3), Integer(4), 
+Print(DyadicOp { verb: Residue, lhs: Integer(2),
+    rhs: Terms([Integer(0), Integer(1), Integer(2), Integer(3), Integer(4),
     Integer(5), Integer(6), Integer(7)]) }),
- Print(IsGlobal { ident: "another", expr: Str("It\'s Escaped") }),
- Print(DyadicOp { verb: Residue, lhs: Integer(3), rhs: Terms([Integer(0), 
-    Integer(1), Integer(2), Integer(3), Integer(4), Integer(5), 
+Print(IsGlobal { ident: "another", expr: Str("It\'s Escaped") }),
+Print(DyadicOp { verb: Residue, lhs: Integer(3), rhs: Terms([Integer(0),
+    Integer(1), Integer(2), Integer(3), Integer(4), Integer(5),
     Integer(6), Integer(7)]) }),
- Print(DyadicOp { verb: Times, lhs: DyadicOp { verb: Plus, lhs: Integer(2), 
-    rhs: Integer(1) }, rhs: DyadicOp { verb: Plus, lhs: Integer(2), 
+Print(DyadicOp { verb: Times, lhs: DyadicOp { verb: Plus, lhs: Integer(2),
+    rhs: Integer(1) }, rhs: DyadicOp { verb: Plus, lhs: Integer(2),
         rhs: Integer(2) } }),
- Print(DyadicOp { verb: Times, lhs: Integer(3), 
-            rhs: DyadicOp { verb: Plus, lhs: Integer(2), rhs: Integer(1) } }),
- Print(DyadicOp { verb: Plus, lhs: Integer(1), rhs: DyadicOp { verb: Divide, 
+Print(DyadicOp { verb: Times, lhs: Integer(3), rhs: DyadicOp { verb: Plus,
+    lhs: Integer(2), rhs: Integer(1) } }),
+Print(DyadicOp { verb: Plus, lhs: Integer(1), rhs: DyadicOp { verb: Divide,
     lhs: Integer(3), rhs: Integer(4) } }),
- Print(IsGlobal { ident: "x", expr: 
-    Integer(100) }),
- Print(DyadicOp { verb: Minus, lhs: Ident("x"), rhs: Integer(1) }),
- Print(IsGlobal { ident: "y", expr: DyadicOp { verb: Minus, lhs: Ident("x"), 
+Print(IsGlobal { ident: "x", expr: Integer(100) }),
+Print(DyadicOp { verb: Minus, lhs: Ident("x"), rhs: Integer(1) }),
+Print(IsGlobal { ident: "y", expr: DyadicOp { verb: Minus, lhs: Ident("x"),
     rhs: Integer(1) } }),
- Print(Ident("y")), 
- Print(Reduce { verb: Plus, expr: Terms([Integer(100), Integer(200), 
-    Integer(300)]) })]
+Print(Ident("y"))]
 ```
 
 [J language]: https://jsoftware.com/
-[interpreter]: https://jsoftware.com/stable.htm
-[compiler]: https://github.com/mattjquinn/jcompiler
+[interpreter]: https://jsoftware.com/
 [full vocabulary]: https://code.jsoftware.com/wiki/NuVoc
 [implicit whitespace]: ../grammars/syntax.md#implicit-whitespace
 [atomic]: ../grammars/syntax.md#atomic
 [silence]: ../grammars/syntax.md#silent-and-atomic-rules
 [silent]: ../grammars/syntax.md#silent-and-atomic-rules
-[the `EOI` marker]: ../grammars/syntax.md#start-and-end-of-input
-[this book's repository]: https://github.com/pest-parser/book
+[`Pair`]: https://pest.rs/book/parser_api.html#pairs
+[within this book's repository]: https://github.com/pest-parser/book/tree/master/examples/jlang-parser

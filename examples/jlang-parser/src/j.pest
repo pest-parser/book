@@ -10,9 +10,9 @@ expr = {
     | terms
 }
 
-monadicExpr = { action ~ expr }
+monadicExpr = { verb ~ expr }
 
-dyadicExpr = { (monadicExpr | terms) ~ action ~ expr }
+dyadicExpr = { (monadicExpr | terms) ~ verb ~ expr }
 
 assgmtExpr = { ident ~ "=:" ~ expr }
 
@@ -20,15 +20,11 @@ terms = { term+ }
 
 term = _{ decimal | integer | ident | "(" ~ expr ~ ")" }
 
-action = { verb ~ adverb* }
-
 verb = {
     ">:" | "*:" | "-"  | "%" | "#" | ">."
   | "+"  | "*"  | "<"  | "=" | "^" | "|"
   | ">"  | "$"
 }
-
-adverb = { "/" }
 
 integer = @{ "_"? ~ ASCII_DIGIT+ }
 
@@ -40,4 +36,4 @@ string = @{ "'" ~ ( "''" | (!"'" ~ ANY) )* ~ "'" }
 
 WHITESPACE = _{ " " | "\t" }
 
-COMMENT = _{ "NB." ~ ( !("\n" | EOI) ~ ANY)* }
+COMMENT = _{ "NB." ~ ( !"\n" ~ ANY)* }
