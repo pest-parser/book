@@ -47,7 +47,7 @@ through a parser that builds an AST by iterating over the rules that
 `pest` gives us. You can find the full source code
 [within this book's repository].
 
-## The Grammar
+## The grammar
 
 We'll build up a grammar section by section, starting with
 the program rule:
@@ -131,7 +131,7 @@ escaping them with an additional quote.
 Notice how we use `pest`'s `@` modifier to make each of these rules [atomic],
 meaning [implicit whitespace] is forbidden, and
 that interior rules (i.e., `ASCII_ALPHA` in `ident`) become [silent] &mdash;
-when our parser receives any of these tokens from, they will be terminal:
+when our parser receives any of these tokens, they will be terminal:
 
 ```pest
 integer = @{ "_"? ~ ASCII_DIGIT+ }
@@ -158,10 +158,10 @@ to separate any statement that might precede the comment from the statement
 on the succeeding line.
 
 ```pest
-COMMENT = _{ "NB." ~ ( !"\n" ~ ANY)* }
+COMMENT = _{ "NB." ~ (!"\n" ~ ANY)* }
 ```
 
-## Parsing and AST Generation
+## Parsing and AST generation
 
 This section will walk through a parser that uses the grammar above.
 Library includes and self-explanatory code are omitted here; you can find 
@@ -438,5 +438,5 @@ Print(Ident("y"))]
 [atomic]: ../grammars/syntax.md#atomic
 [silence]: ../grammars/syntax.md#silent-and-atomic-rules
 [silent]: ../grammars/syntax.md#silent-and-atomic-rules
-[`Pair`]: https://pest.rs/book/parser_api.html#pairs
+[`Pair`]: ../parser_api.md#pairs
 [within this book's repository]: https://github.com/pest-parser/book/tree/master/examples/jlang-parser

@@ -36,4 +36,4 @@ string = @{ "'" ~ ( "''" | (!"'" ~ ANY) )* ~ "'" }
 
 WHITESPACE = _{ " " | "\t" }
 
-COMMENT = _{ "NB." ~ ( !"\n" ~ ANY)* }
+COMMENT = _{ "NB." ~ (!"\n" ~ ANY)* }

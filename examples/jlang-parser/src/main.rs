@@ -62,13 +62,6 @@ pub enum AstNode {
     Str(CString),
 }
 
-impl std::fmt::Display for AstNode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let _ = write!(f, "{:?}", self);
-        Ok(())
-    }
-}
-
 pub fn parse(source: &str) -> Result<Vec<AstNode>, Error<Rule>> {
     let mut ast = vec![];
 
