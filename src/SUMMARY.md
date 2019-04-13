@@ -9,6 +9,7 @@
     - [Syntax of pest parsers](grammars/syntax.md)
     - [Built-in rules](grammars/built-ins.md)
     - [Example: JSON](examples/json.md)
+    - [Example: The J language](examples/jlang.md)
 - [Operator precedence (WIP)](precedence.md)
     - [Example: Calculator (WIP)](examples/calculator.md)
 - [Final project: Awk clone (WIP)](examples/awk.md)
