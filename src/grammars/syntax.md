@@ -331,7 +331,8 @@ silent = _{ ... }
 ```
 
 Rules called from a silent rule are not treated as silent unless they are
-declared to be silent.
+declared to be silent. These rules may produce [pairs] or [tokens] and can appear
+in a parse result.
 
 [pairs]: ../parser_api.html#pairs
 [tokens]: ../parser_api.html#tokens
