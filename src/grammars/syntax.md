@@ -330,6 +330,9 @@ To make a silent rule, precede the left curly bracket `{` with a low line
 silent = _{ ... }
 ```
 
+Rules called from a silent rule are not treated as silent unless they are
+declared to be silent.
+
 [pairs]: ../parser_api.html#pairs
 [tokens]: ../parser_api.html#tokens
 
