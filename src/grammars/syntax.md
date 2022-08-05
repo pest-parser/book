@@ -1,4 +1,4 @@
-# Syntax of pest parsers
+# Syntax of pest grammars
 
 `pest` grammars are lists of rules. Rules are defined like this:
 
