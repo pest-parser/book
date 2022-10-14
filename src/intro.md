@@ -36,35 +36,33 @@ And here is the function that uses that parser to calculate answers:
 
 ```rust
 lazy_static! {
-    static ref PREC_CLIMBER: PrecClimber<Rule> = {
+    static ref PRATT_PARSER: PrattParser<Rule> = {
         use Rule::*;
         use Assoc::*;
 
-        PrecClimber::new(vec![
-            Operator::new(add, Left) | Operator::new(subtract, Left),
-            Operator::new(multiply, Left) | Operator::new(divide, Left),
-            Operator::new(power, Right)
-        ])
+        PrattParser::new()
+            .op(Op::infix(add, Left) | Op::infix(subtract, Left))
+            .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
+            .op(Op::infix(power, Right))
     };
 }
 
 fn eval(expression: Pairs<Rule>) -> f64 {
-    PREC_CLIMBER.climb(
-        expression,
-        |pair: Pair<Rule>| match pair.as_rule() {
-            Rule::num => pair.as_str().parse::<f64>().unwrap(),
-            Rule::expr => eval(pair.into_inner()),
+    PRATT_PARSER
+        .map_primary(|primary| match primary.as_rule() {
+            Rule::num => primary.as_str().parse::<f64>().unwrap(),
+            Rule::expr => eval(primary.into_inner()),
             _ => unreachable!(),
-        },
-        |lhs: f64, op: Pair<Rule>, rhs: f64| match op.as_rule() {
-            Rule::add      => lhs + rhs,
+        })
+        .map_infix(|lhs, op, rhs| match op.as_rule() {
+            Rule::add => lhs + rhs,
             Rule::subtract => lhs - rhs,
             Rule::multiply => lhs * rhs,
-            Rule::divide   => lhs / rhs,
-            Rule::power    => lhs.powf(rhs),
+            Rule::divide => lhs / rhs,
+            Rule::power => lhs.powf(rhs),
             _ => unreachable!(),
-        },
-    )
+        })
+        .parse(expression)
 }
 ```
 
