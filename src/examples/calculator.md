@@ -216,12 +216,13 @@ We can currently only parse positive integers, eg `16` or `2342`. But we also wa
 To do this, we introduce the unary minus, so we can make `-4` and `-(8 + 15)`.
 We need the following change to grammar:
 ```pest
-+ unary_minus = { "-" ~ atom }
++ unary_minus = { "-" }
++ primary = _{ integer | "(" ~ expr ~ ")" }
 - atom = _{ integer | "(" ~ expr ~ ")" }
-+ atom = _{ integer | unary_minus | "(" ~ expr ~ ")" }
++ atom = _{ unary_minus? ~ primary }
 ```
 
 For these last changes we've omitted the small changes to the AST and parsing logic (using `map_prefix`).
 
 You can find all these details in 
-the repository: https://github.com/pest-parser/book/tree/master/examples/pest-calculator.
+the repository: [github.com/pest-parser/book/tree/master/examples/pest-calculator](https://github.com/pest-parser/book/tree/master/examples/pest-calculator).
