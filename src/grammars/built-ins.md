@@ -185,13 +185,13 @@ details.
 ### Script properties
 
 The [Unicode script property](https://unicode.org/standard/supported.html)
-has included in built-in rules, for matches characters for particular languages.
+has included built-in rules for matching characters in particular languages.
 
 **For example:**
 
-- `HAN` for matches characters in Chinese language
-- `KATAKANA`, `HIRAGANA` for Japanese language
-- `Hangul` for Korean language
+- `HAN` for matching characters in Chinese languages
+- `KATAKANA`, `HIRAGANA` for the Japanese language
+- `HANGUL` for the Korean language
 
 **All available rules:**
 
