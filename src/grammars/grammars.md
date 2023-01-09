@@ -36,6 +36,22 @@ exists during compilation. However, you can use `Rules` just like any other
 enum, and you can use `parse(...)` through the [`Pairs`] interface described in
 the [Parser API chapter](../parser_api.html).
 
+## Load multiple grammars
+
+If you have multiple grammars, you can load them all at once:
+
+```rust
+use pest::Parser;
+
+#[derive(Parser)]
+#[grammar = "parser/base.pest"]
+#[grammar = "parser/grammar.pest"]
+struct MyParser;
+```
+
+Then `pest` will generate a `Rules` enum that contains all the rules from both.
+This is useful if you have a base grammar that you want to extend in multiple.
+
 ## Warning about PEGs!
 
 Parsing expression grammars look quite similar to other parsing tools you might
