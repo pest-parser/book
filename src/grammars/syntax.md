@@ -3,8 +3,10 @@
 `pest` grammars are lists of rules. Rules are defined like this:
 
 ```pest
+//! Grammar doc
 my_rule = { ... }
 
+/// Rule doc
 another_rule = {        // comments are preceded by two slashes
     ...                 // whitespace goes anywhere
 }
