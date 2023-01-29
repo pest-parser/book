@@ -16,8 +16,8 @@ another_rule = {        // line comment
 
 ### Doc comments
 
-Line doc comments beginning with exactly three slashes `///`.
-And `//!` for document the entire of grammar file.
+Line doc comments begin with exactly three slashes `///`
+ and `//!` is used to document the entire grammar file.
 
 ```pest
 //! A parser for JSON file.
