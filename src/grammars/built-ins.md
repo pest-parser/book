@@ -189,7 +189,7 @@ has included built-in rules for matching characters in particular languages.
 
 **For example:**
 
-We want match a string that contains any CJK (regexp: `\p{CJK}`) characters like `你好世界` or `こんにちは世界` or `안녕하세요 세계`.
+We want match a string that contains any CJK (regexp: `\p{CJK}`) characters such as `你好世界` or `こんにちは世界` or `안녕하세요 세계`.
 
 - `HAN`: representing Chinese characters, including Simplified Chinese, Traditional Chinese, Japanese kanji, and Korean hanja.
 - `HIRAGANA`: representing the Japanese hiragana syllabary.
