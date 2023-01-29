@@ -189,9 +189,19 @@ has included built-in rules for matching characters in particular languages.
 
 **For example:**
 
-- `HAN` for matching characters in Chinese languages
-- `KATAKANA`, `HIRAGANA` for the Japanese language
-- `HANGUL` for the Korean language
+We want match a string that contains any CJK (regexp: `\p{CJK}`) characters such as `你好世界` or `こんにちは世界` or `안녕하세요 세계`.
+
+- `HAN`: representing Chinese characters, including Simplified Chinese, Traditional Chinese, Japanese kanji, and Korean hanja.
+- `HIRAGANA`: representing the Japanese hiragana syllabary.
+- `KATAKANA`: representing the Japanese katakana syllabary.
+- `HANGUL`: representing Korean alphabetical characters.
+- `BOPOMOFO`: representing Chinese phonetic symbols.
+
+So we define a rule named `CJK` like this:
+
+```pest
+CJK = { HAN | HIRAGANA | KATAKANA | HANGUL | BOPOMOFO }
+```
 
 **All available rules:**
 
