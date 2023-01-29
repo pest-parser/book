@@ -7,6 +7,7 @@
 - [Grammars](grammars/grammars.md)
     - [Parsing expression grammars](grammars/peg.md)
     - [Syntax of pest parsers](grammars/syntax.md)
+    - [Comments](grammars/comments.md)
     - [Built-in rules](grammars/built-ins.md)
     - [Example: JSON](examples/json.md)
     - [Example: The J language](examples/jlang.md)
