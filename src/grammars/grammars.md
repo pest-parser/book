@@ -50,7 +50,7 @@ struct MyParser;
 ```
 
 Then `pest` will generate a `Rules` enum that contains all the rules from both.
-This is useful if you have a base grammar that you want to extend in multiple.
+This is useful if you have a base grammar that you want to extend in multiple grammars.
 
 ## Warning about PEGs!
 

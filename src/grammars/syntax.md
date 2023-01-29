@@ -384,33 +384,6 @@ fstring = @{ "\"" ~ ... }
 expr = !{ ... }
 ```
 
-## Include
-
-`include!` is allows you to load rules from other pest files.
-
-Sometimes, you'll want to split rules into multiple parts. For instance, you
-might want to define rules, then use them in multiple places.
-
-`base.pest`:
-
-```pest
-WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
-identifier = { (ASCII_ALPHANUMERIC | "_" | "-")+ }
-```
-
-Then we can load use `include!("base.pest")` in other files to load the rules
-of `base.pest` into the current file.
-
-`toml.pest`:
-
-```pest
-include!("base.pest")
-
-pair  = { key ~ WHITESPACE* ~ "=" ~ WHITESPACE* ~ value }
-key   = @{ identifier }
-value = { !NEWLINE ~ ANY }
-```
-
 ## The stack (WIP)
 
 `pest` maintains a stack that can be manipulated directly from the grammar. An
