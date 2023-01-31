@@ -294,9 +294,9 @@ ws = _{ " " }
 com = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 ```
 
-Note that implicit whitespace is *not* inserted at the beginning or end of rules
+Note that Implicit whitespace is *not* inserted at the beginning or end of rules
 &mdash; for instance, `expression` does *not* match `" 4+5 "`. If you want to
-include implicit whitespace at the beginning and end of a rule, you will need to
+include Implicit whitespace at the beginning and end of a rule, you will need to
 sandwich it between two empty rules (often `SOI` and `EOI` [as above]):
 
 ```pest
@@ -321,6 +321,8 @@ want to see them included inside other rules!)
 
 ## Silent and atomic rules
 
+### Silent
+
 **Silent** rules are just like normal rules &mdash; when run, they function the
 same way &mdash; except they do not produce [pairs] or [tokens]. If a rule is
 silent, it will never appear in a parse result.
@@ -341,22 +343,28 @@ in a parse result.
 
 ### Atomic
 
-`pest` has two kinds of atomic rules: **atomic** and **compound atomic**. To
+Pest has two kinds of atomic rules: **atomic** and **compound atomic**. To
 make one, write the sigil before the left curly bracket `{`.
 
 ```pest
+/// Atomic rule start with `@`
 atomic = @{ ... }
+
+/// Compound Atomic start with `$`
 compound_atomic = ${ ... }
 ```
 
-Both kinds of atomic rule prevent [implicit whitespace]: inside an atomic rule,
-the tilde `~` means "immediately followed by", and [repetition operators]
-(asterisk `*` and plus sign `+`) have no implicit separation. In addition, all
-other rules called from an atomic rule are also treated as atomic.
+Both kinds of atomic rule prevent [implicit whitespace]:
 
-The difference between the two is how they produce tokens for inner rules. In
-an atomic rule, interior matching rules are [silent]. By contrast, compound
-atomic rules produce inner tokens as normal.
+1. Inside an atomic rule, the tilde `~` means "immediately followed by".
+2. [Repetition operators] (asterisk `*` and plus sign `+`) have no implicit separation.
+
+In addition, all other rules called from an atomic rule are also treated as atomic.
+
+The difference between the two is how they produce tokens for inner rules:
+
+- **atomic** - In an Atomic rule, interior matching rules are [silent].
+- **compound atomic** - By contrast, compound atomic rules produce inner tokens as normal.
 
 Atomic rules are useful when the text you are parsing ignores whitespace except
 in a few cases, such as literal strings. In this instance, you can write
