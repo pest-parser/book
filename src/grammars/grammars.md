@@ -14,6 +14,7 @@ they are in the same directory:
 
 ```rust
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "parser/grammar.pest"] // relative to project `src`
@@ -36,12 +37,29 @@ exists during compilation. However, you can use `Rules` just like any other
 enum, and you can use `parse(...)` through the [`Pairs`] interface described in
 the [Parser API chapter](../parser_api.html).
 
+## Inline grammar
+
+If you don't want to have a separate grammar file, you can use the `grammar_inline`:
+
+```rust
+use pest::Parser;
+use pest_derive::Parser;
+
+#[derive(Parser)]
+#[grammar_inline = r#"
+// your grammar here
+a = { "a" }
+"#]
+struct MyParser;
+```
+
 ## Load multiple grammars
 
 If you have multiple grammars, you can load them all at once:
 
 ```rust
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "parser/base.pest"]
