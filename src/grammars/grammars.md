@@ -14,6 +14,7 @@ they are in the same directory:
 
 ```rust
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "parser/grammar.pest"] // relative to project `src`
@@ -42,6 +43,7 @@ If you don't want to have a separate grammar file, you can use the `grammar_inli
 
 ```rust
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar_inline = r#"
@@ -57,6 +59,7 @@ If you have multiple grammars, you can load them all at once:
 
 ```rust
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "parser/base.pest"]
