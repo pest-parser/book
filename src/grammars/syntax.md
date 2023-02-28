@@ -450,6 +450,48 @@ raw_string_interior = {
 
 ["raw string literals"]: https://doc.rust-lang.org/book/second-edition/appendix-02-operators.html#non-operator-symbols
 
+### Indentation-Sensitive Languages
+
+In conjunction with some extra helpers, the stack can be used to allow parsing indentation-sensitive languages, such as Python.
+
+The general idea is that you store the leading whitespace on the stack with `PUSH` and then use `PEEK_ALL` to match *all* of the whitespace on subsequent lines.
+
+When exiting an indented block, use `DROP` to remove the stack entry without needing to match it.
+
+An example grammar demonstrating this concept is given here:
+
+```pest
+Grammar = { SOI ~ NEWLINE* ~ BlockContent* ~ NEWLINE* ~ EOI }
+
+NewBlock = _{
+    // The first line in the block
+    PEEK_ALL ~ PUSH("  "+ | "\t"+) ~ BlockContent ~
+    // Subsequent lines in the block
+    (PEEK_ALL ~ BlockContent)* ~
+    // Remove the last layer of indentation from the stack when exiting the block
+    DROP
+}
+
+BlockName = { ASCII_ALPHA+ }
+
+BlockContent = {
+    BlockName ~ (NEWLINE | EOI) ~ NewBlock*
+}
+```
+
+This matches texts such as the following, whilst preserving indentation structure:
+
+```
+Hello
+  This
+    Is
+    An
+  Indentation
+    Sensitive
+      Language
+Demonstration
+```
+
 # Cheat sheet
 
 | Syntax           | Meaning                           | Syntax                  | Meaning              |
@@ -466,6 +508,7 @@ raw_string_interior = {
 | `&foo`           | [positive predicate]              | `!bar`                  | [negative predicate] |
 | `PUSH(baz)`      | [match and push]                  |                         |                      |
 | `POP`            | [match and pop]                   | `PEEK`                  | [match without pop]  |
+| `DROP`           | [pop without matching]            | `PEEK_ALL`              | [match entire stack] |
 
 [regular rule]: #syntax-of-pest-parsers
 [silent]: #silent-and-atomic-rules
@@ -488,3 +531,5 @@ raw_string_interior = {
 [match and push]: #the-stack-wip
 [match and pop]: #the-stack-wip
 [match without pop]: #the-stack-wip
+[pop without matching]: #indentation-sensitive-languages
+[match entire stack]: #indentation-sensitive-languages
