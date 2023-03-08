@@ -2,6 +2,16 @@
 title = "A thoughtful introduction to the pest parser"
 description = "An introduction to the pest parser by implementing a Rust grammar subset"
 author = "Dragoș Tiselice"
+language = "en"
+multilingual = false
 
 [output.html]
+git-repository-url = "https://github.com/pest-parser/book/tree/master/"
+edit-url-template = "https://github.com/pest-parser/book/edit/master/{path}"
 additional-js = ["highlight-pest.js"]
+
+[output.html.playground]
+runnable = false
+
+[output.html.print]
+enable = false
