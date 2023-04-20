@@ -394,6 +394,30 @@ fstring = @{ "\"" ~ ... }
 expr = !{ ... }
 ```
 
+### Tags
+Sometimes, you may want to attach a label to a part of a rule. This is useful for distinguishing
+among different types of tokens (of the same expression) or for the ease of extracting information
+from parse trees (without creating additional rules).
+To do this, you can use the `#` symbol to bind a name to a part of a rule:
+
+```pest
+rule = { #tag = ... }
+```
+
+You can then access tags in your parse tree by using the `as_node_tag` method on `Pair`
+or you can use the helper methods `find_first_tagged` or `find_tagged` on `Pairs`:
+
+```rust
+let pairs = ExampleParser::parse(Rule::example_rule, example_input).unwrap();
+for pair in pairs.clone() {
+    if let Some(tag) = pair.as_node_tag() {
+        // ...
+    }
+}
+let first = pairs.find_first_tagged("tag");
+let all_tagged = pairs.find_tagged("tag");
+```
+
 ## The stack (WIP)
 
 `pest` maintains a stack that can be manipulated directly from the grammar. An
@@ -498,7 +522,7 @@ Demonstration
 |:----------------:|:---------------------------------:|:-----------------------:|:--------------------:|
 | `foo =  { ... }` | [regular rule]                    | `baz = @{ ... }`        | [atomic]             |
 | `bar = _{ ... }` | [silent]                          | `qux = ${ ... }`        | [compound-atomic]    |
-|                  |                                   | `plugh = !{ ... }`      | [non-atomic]         |
+| `#tag = ...`     | [tags]                            | `plugh = !{ ... }`      | [non-atomic]         |
 | `"abc"`          | [exact string]                    | `^"abc"`                | [case insensitive]   |
 | `'a'..'z'`       | [character range]                 | `ANY`                   | [any character]      |
 | `foo ~ bar`      | [sequence]                        | <code>baz \| qux</code> | [ordered choice]     |
@@ -515,6 +539,7 @@ Demonstration
 [atomic]: #atomic
 [compound-atomic]: #atomic
 [non-atomic]: #non-atomic
+[tags]: #tags
 [exact string]: #terminals
 [case insensitive]: #terminals
 [character range]: #terminals
