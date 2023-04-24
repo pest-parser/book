@@ -35,17 +35,6 @@ pest = "2.0"
 pest_derive = "2.0"
 ```
 
-And finally bring `pest` and `pest_derive` into scope in `src/main.rs`:
-
-```rust
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-```
-
-The `#[macro_use]` attribute is necessary to use `pest` to generate parsing
-code! This is a very important attribute.
-
 ## Writing the parser
 
 `pest` works by compiling a description of a file format, called a *grammar*,
@@ -64,6 +53,7 @@ Rust needs to know to compile this file using `pest`:
 
 ```rust
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "csv.pest"]
