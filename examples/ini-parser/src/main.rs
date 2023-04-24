@@ -1,8 +1,5 @@
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
 use pest::Parser;
+use pest_derive::Parser;
 use std::collections::HashMap;
 use std::fs;
 
@@ -15,7 +12,8 @@ fn main() {
 
     let file = INIParser::parse(Rule::file, &unparsed_file)
         .expect("unsuccessful parse") // unwrap the parse result
-        .next().unwrap(); // get and unwrap the `file` rule; never fails
+        .next()
+        .unwrap(); // get and unwrap the `file` rule; never fails
 
     let mut properties: HashMap<&str, HashMap<&str, &str>> = HashMap::new();
     let mut current_section_name = "";

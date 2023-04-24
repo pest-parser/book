@@ -1,10 +1,7 @@
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
 use self::AstNode::*;
 use pest::error::Error;
 use pest::Parser;
+use pest_derive::Parser;
 use std::ffi::CString;
 
 #[derive(Parser)]

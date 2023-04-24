@@ -2,6 +2,8 @@
 name = "csv-tool"
 version = "0.1.0"
 authors = ["wirelyre <wirelyre@gmail.com>"]
+edition = "2021"
+rust-version = "1.56"
 
 [dependencies]
 pest = "2.0"
