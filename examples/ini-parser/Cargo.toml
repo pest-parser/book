@@ -1,10 +1,10 @@
 [package]
 name = "ini-parser"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["wirelyre <wirelyre@gmail.com>"]
 edition = "2021"
 rust-version = "1.56"
 
 [dependencies]
-pest = "2.0"
-pest_derive = "2.0"
+pest = "2.6.0"
+pest_derive = "2.6.0"
