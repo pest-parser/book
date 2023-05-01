@@ -33,7 +33,7 @@ beginning of the file belong to an implicit "empty" section.
 ## Writing the grammar
 
 Start by [initializing a new project] using Cargo, adding the dependencies
-`pest = "2.0"` and `pest_derive = "2.0"`. Make a new file, `src/ini.pest`, to
+`pest = "2.6"` and `pest_derive = "2.6"`. Make a new file, `src/ini.pest`, to
 hold the grammar.
 
 The text of interest in our file &mdash; `username`, `/var/www/example.org`,
