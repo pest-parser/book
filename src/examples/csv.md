@@ -31,8 +31,8 @@ Add the `pest` and `pest_derive` crates to the dependencies section in `Cargo.to
 
 ```toml
 [dependencies]
-pest = "2.0"
-pest_derive = "2.0"
+pest = "2.6"
+pest_derive = "2.6"
 ```
 
 ## Writing the parser

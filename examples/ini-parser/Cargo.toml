@@ -6,5 +6,5 @@ edition = "2021"
 rust-version = "1.56"
 
 [dependencies]
-pest = "2.6.0"
-pest_derive = "2.6.0"
+pest = "2.6"
+pest_derive = "2.6"

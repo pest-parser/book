@@ -10,8 +10,8 @@ on [rustup.rs](https://rustup.rs). Once that is out of the way, make sure you
 add *pest* to your `Cargo.toml`:
 
 ```toml
-pest = "^1.0"
-pest_derive = "^1.0"
+pest = "2.6"
+pest_derive = "2.6"
 ```
 
 *pest_derive* is the part of the parser that analyzes, verifies, optimizes, and

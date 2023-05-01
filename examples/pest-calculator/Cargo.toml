@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4.0"
-pest = "2.6.0"
-pest_derive = "2.6.0"
+pest = "2.6"
+pest_derive = "2.6"
