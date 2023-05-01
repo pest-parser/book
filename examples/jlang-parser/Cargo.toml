@@ -1,9 +1,10 @@
 [package]
 name = "jlang-parser"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Matt Quinn <matt@mattjquinn.com>"]
-edition = "2018"
+edition = "2021"
+rust-version = "1.56"
 
 [dependencies]
-pest = "2.1.0"
-pest_derive = "2.1.0"
+pest = "2.6"
+pest_derive = "2.6"

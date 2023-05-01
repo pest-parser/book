@@ -1,9 +1,11 @@
 [package]
 name = "calculator"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["wirelyre <wirelyre@gmail.com>"]
+edition = "2021"
+rust-version = "1.56"
 
 [dependencies]
 lazy_static = "1.1"
-pest = "2.0"
-pest_derive = "2.0"
+pest = "2.6"
+pest_derive = "2.6"

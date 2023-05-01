@@ -31,20 +31,9 @@ Add the `pest` and `pest_derive` crates to the dependencies section in `Cargo.to
 
 ```toml
 [dependencies]
-pest = "2.0"
-pest_derive = "2.0"
+pest = "2.6"
+pest_derive = "2.6"
 ```
-
-And finally bring `pest` and `pest_derive` into scope in `src/main.rs`:
-
-```rust
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-```
-
-The `#[macro_use]` attribute is necessary to use `pest` to generate parsing
-code! This is a very important attribute.
 
 ## Writing the parser
 
@@ -64,6 +53,7 @@ Rust needs to know to compile this file using `pest`:
 
 ```rust
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "csv.pest"]

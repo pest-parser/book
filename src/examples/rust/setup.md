@@ -10,8 +10,8 @@ on [rustup.rs](https://rustup.rs). Once that is out of the way, make sure you
 add *pest* to your `Cargo.toml`:
 
 ```toml
-pest = "^1.0"
-pest_derive = "^1.0"
+pest = "2.6"
+pest_derive = "2.6"
 ```
 
 *pest_derive* is the part of the parser that analyzes, verifies, optimizes, and
@@ -36,18 +36,14 @@ to be.
 [1]: https://docs.rs/pest/1.0/pest/trait.Parser.html
 
 ```rust
+// Don't forget to request use of the pest and pest_derive crate
+use pest::Parser;
+use pest_derive::Parser
+
 #[cfg(debug_assertions)]
 const _GRAMMAR: &'static str = include_str!("path/to/rust.pest"); // relative to this file
 
 #[derive(Parser)]
 #[grammar = "path/to/rust.pest"] // relative to src
 struct RustParser;
-```
-
-Also, don't forget to add the crate dependency in your crate's main file.
-
-```rust
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
 ```

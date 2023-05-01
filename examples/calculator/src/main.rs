@@ -1,12 +1,10 @@
-#[macro_use]
-extern crate lazy_static;
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
+use lazy_static::lazy_static;
+use pest_derive::Parser;
+use pest::Parser;
+
 
 use pest::iterators::Pairs;
 use pest::pratt_parser::{Assoc, Op, PrattParser};
-use pest::Parser;
 use std::io::BufRead;
 
 #[derive(Parser)]

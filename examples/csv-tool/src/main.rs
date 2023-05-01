@@ -1,8 +1,5 @@
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
 use pest::Parser;
+use pest_derive::Parser;
 use std::fs;
 
 #[derive(Parser)]
@@ -14,7 +11,8 @@ fn main() {
 
     let file = CSVParser::parse(Rule::file, &unparsed_file)
         .expect("unsuccessful parse") // unwrap the parse result
-        .next().unwrap(); // get and unwrap the `file` rule; never fails
+        .next()
+        .unwrap(); // get and unwrap the `file` rule; never fails
 
     let mut field_sum: f64 = 0.0;
     let mut record_count: u64 = 0;

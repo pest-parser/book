@@ -33,7 +33,7 @@ beginning of the file belong to an implicit "empty" section.
 ## Writing the grammar
 
 Start by [initializing a new project] using Cargo, adding the dependencies
-`pest = "2.0"` and `pest_derive = "2.0"`. Make a new file, `src/ini.pest`, to
+`pest = "2.6"` and `pest_derive = "2.6"`. Make a new file, `src/ini.pest`, to
 hold the grammar.
 
 The text of interest in our file &mdash; `username`, `/var/www/example.org`,
@@ -78,11 +78,8 @@ file = {
 To compile the parser into Rust, we need to add the following to `src/main.rs`:
 
 ```rust
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
 use pest::Parser;
+use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "ini.pest"]
