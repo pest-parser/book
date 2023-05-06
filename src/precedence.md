@@ -16,7 +16,7 @@ The following pest grammar defines a calculator which can be used for Pratt pars
 WHITESPACE   =  _{ " " | "\t" | NEWLINE }
   
 program      =   { SOI ~ expr ~ EOI }
-  expr       =   { prefix* ~ primary ~ postfix* ~ (infix ~ prefix* ~ primary ~ postfix* )* }
+  expr       =   { prefix? ~ primary ~ postfix? ~ (infix ~ prefix? ~ primary ~ postfix? )* }
     infix    =  _{ add | sub | mul | div | pow }
       add    =   { "+" } // Addition
       sub    =   { "-" } // Subtraction
