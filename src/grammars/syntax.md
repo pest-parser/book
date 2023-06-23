@@ -418,6 +418,13 @@ let first = pairs.find_first_tagged("tag");
 let all_tagged = pairs.find_tagged("tag");
 ```
 
+Note that you need to enable "grammar-extras" feature to use this functionality:
+
+```toml
+# ...
+pest_derive = { version = "2.7", features = ["grammar-extras"] }
+```
+
 ## The stack (WIP)
 
 `pest` maintains a stack that can be manipulated directly from the grammar. An
