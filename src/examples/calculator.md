@@ -64,6 +64,16 @@ Corresponding to this format, we define our rule for expressions:
 ```pest
 expr = { atom ~ (bin_op ~ atom)* }
 ```
+
+And finally, we define our `WHITESPACE` and equation rule:
+```pest
+WHITESPACE = _{ " " }
+
+// We can't have SOI and EOI on expr directly, because it is used
+// recursively (e.g. with parentheses)
+equation = _{ SOI ~ expr ~ EOI }
+```
+
 This defines the grammar which generates the required input for the Pratt parser.
 
 ## Abstract Syntax Tree
