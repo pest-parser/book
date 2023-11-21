@@ -10,12 +10,11 @@ abstractions, `pest` parsers can be **very fast**.
 
 ## Sample
 
-Here is the complete grammar for a simple calculator [developed in a (currently
-unwritten) later chapter](examples/calculator.html):
+Here is the complete grammar for a simple calculator [developed in a later chapter](examples/calculator.html):
 
 ```pest
 num = @{ int ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ int)? }
-    int = { ("+" | "-")? ~ ASCII_DIGIT+ }
+int = { ("+" | "-")? ~ ASCII_DIGIT+ }
 
 operation = _{ add | subtract | multiply | divide | power }
     add      = { "+" }
