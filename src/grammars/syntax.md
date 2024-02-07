@@ -313,6 +313,14 @@ main = { SOI ~ expression ~ EOI }
 (Be sure to mark the `WHITESPACE` and `COMMENT` rules as [silent] unless you
 want to see them included inside other rules!)
 
+If you want the `WHITESPACE` and `COMMENT` inner rules included,
+note that you need to mark the rule with an explicit `$`:
+
+```
+COMMENT = ${ SingleLineComment }
+SingleLineComment = { "//" ~ (!"\n" ~ ANY)* }
+```
+
 [sequence]: #sequence
 [repetition]: #repetition
 [atomic rules]: #atomic
