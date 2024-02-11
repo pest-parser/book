@@ -11,13 +11,18 @@ add *pest* to your `Cargo.toml`:
 
 ```toml
 pest = "2.6"
-pest_derive = "2.6"
+pest_derive = { version = "2.6", features = ["grammar-extras"] }
 ```
 
 *pest_derive* is the part of the parser that analyzes, verifies, optimizes, and
 generates the code that then makes use of the APIs found in the *pest* crate.
 This is separate because the actual procedural macro that derives the parser for
 you is linked at compile time.
+
+The "grammar-extras" feature mainly adds advanced functionality, but it also
+changes the parser behaviour in backwards-incompatible ways (hence it will not
+become the default in 2.x) by fixing several problems. New projects are
+encouraged to enable this feature as it helps prevent unexpected behaviour.
 
 ## The `.pest` grammar file
 
