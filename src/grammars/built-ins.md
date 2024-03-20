@@ -29,6 +29,7 @@ And for **miscellaneous** use:
 
 | Built-in rule        | Meaning              | Equivalent                              |
 |:--------------------:|:--------------------:|:---------------------------------------:|
+| `ASCII`              | any ascii character  | <code>'\u{00}'..'\u{7F}'</code>         |
 | `ASCII_ALPHANUMERIC` | any digit or letter  | <code>ASCII_DIGIT \| ASCII_ALPHA</code> |
 | `NEWLINE`            | any line feed format | <code>"\n" \| "\r\n" \| "\r"</code>     |
 
