@@ -222,7 +222,7 @@ arbitrary expressions! The reason we are okay with this is that the parentheses 
 expression, it will not make ambiguous what operators belong to the inner expression and which to the outer one.
 
 ### Unary minus
-We can currently only parse positive integers, eg `16` or `2342`. But we also want to do calculations with negative intergers.
+We can currently only parse positive integers, eg `16` or `2342`. But we also want to do calculations with negative integers.
 To do this, we introduce the unary minus, so we can make `-4` and `-(8 + 15)`.
 We need the following change to grammar:
 ```pest
