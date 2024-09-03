@@ -426,7 +426,23 @@ let first = pairs.find_first_tagged("tag");
 let all_tagged = pairs.find_tagged("tag");
 ```
 
-Note that you need to enable "grammar-extras" feature to use this functionality:
+Note that the tagged part of the rule cannot be [silent](#silent)
+or the tag will be ignored, as would be the case in the following example.
+
+```pest
+rule = { #tag = expression }
+expression = _{ ... }
+```
+
+This also includes [built-in](/src/grammars/built-ins.md) rules, which are always silent.
+So the following example will also not create a tag.
+
+```pest
+rule = { #tag = ASCII }
+```
+
+[!WARNING]
+You need to enable "grammar-extras" feature to use this functionality:
 
 ```toml
 # ...
