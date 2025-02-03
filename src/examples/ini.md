@@ -5,9 +5,9 @@ there is no standard for the format, we'll write a program that is able to
 parse this example file:
 
 ```ini
-username=noha
-password=plain_text
-salt=NaCl
+username = noha
+password = plain_text
+salt = NaCl
 
 [server_1]
 interface=eth0
