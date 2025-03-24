@@ -452,8 +452,8 @@ pest_derive = { version = "2.7", features = ["grammar-extras"] }
 ## The stack (WIP)
 
 `pest` maintains a stack that can be manipulated directly from the grammar. An
-expression can be matched and pushed onto the stack with the keyword `PUSH`,
-then later matched exactly with the keywords `PEEK` and `POP`.
+expression can be matched and pushed onto the stack with the keywords`PUSH` or
+`PUSH_LITERAL`, then later matched exactly with the keywords `PEEK` and `POP`.
 
 Using the stack allows *the exact same text* to be matched multiple times,
 rather than *the same pattern*.
@@ -501,6 +501,29 @@ raw_string_interior = {
         ~ ANY             // consume one character
     )*
 }
+```
+
+`PUSH_LITERAL` works similarly, but takes a literal string as its one
+argument. It never consumes any input, always matches, and pushes its
+argument to the stack.
+
+One use case for `PUSH_LITERAL` is when an expression can start with
+one of several open delimiters, and then ends with a closing delimiter
+that depends on the opening one.
+
+For example, the following allows for strings like `(hello world)` or
+`<hello world>`, but not `(hello world>`:
+
+```pest
+Quote = _{ _QuoteStart ~ QuoteChars ~ _QuoteEnd }
+
+_QuoteStart = _{
+      ( "(" ~ PUSH_LITERAL(")") )
+    | ( "<" ~ PUSH_LITERAL(">") )
+}
+_QuoteEnd = _{ POP }
+
+QuoteChars = { (!PEEK ~ ANY)* }
 ```
 
 ["raw string literals"]: https://doc.rust-lang.org/book/second-edition/appendix-02-operators.html#non-operator-symbols
