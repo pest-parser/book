@@ -449,11 +449,12 @@ You need to enable "grammar-extras" feature to use this functionality:
 pest_derive = { version = "2.7", features = ["grammar-extras"] }
 ```
 
-## The stack (WIP)
+## The stack
 
 `pest` maintains a stack that can be manipulated directly from the grammar. An
 expression can be matched and pushed onto the stack with the keywords`PUSH` or
 `PUSH_LITERAL`, then later matched exactly with the keywords `PEEK` and `POP`.
+You can also drop the top string in the stack with `DROP`.
 
 Using the stack allows *the exact same text* to be matched multiple times,
 rather than *the same pattern*.
@@ -503,9 +504,12 @@ raw_string_interior = {
 }
 ```
 
-`PUSH_LITERAL` works similarly, but takes a literal string as its one
-argument. It never consumes any input, always matches, and pushes its
-argument to the stack.
+You can also peek at a range of strings on the stack, rather than just
+the top one. See ["advanced peeking"] in the crate documentation for more.
+
+`PUSH_LITERAL` works similarly to `PUSH`, but takes a literal string
+as its one argument. It never consumes any input, always matches, and
+pushes its argument to the stack.
 
 One use case for `PUSH_LITERAL` is when an expression can start with
 one of several open delimiters, and then ends with a closing delimiter
@@ -525,6 +529,12 @@ _QuoteEnd = _{ POP }
 
 QuoteChars = { (!PEEK ~ ANY)* }
 ```
+
+Finally, you can use `DROP` to remove the top string in the stack without
+matching against input. This keyword matches as long as there is at least
+one item on the stack.
+
+["advanced peeking"]: https://docs.rs/pest/latest/pest/#advanced-peeking
 
 ["raw string literals"]: https://doc.rust-lang.org/book/second-edition/appendix-02-operators.html#non-operator-symbols
 
@@ -584,7 +594,7 @@ Demonstration
 | `baz?`           | [optional]                        | `qux{n}`                | [exactly *n*]        |
 | `qux{m, n}`      | [between *m* and *n* (inclusive)] |                         |                      |
 | `&foo`           | [positive predicate]              | `!bar`                  | [negative predicate] |
-| `PUSH(baz)`      | [match and push]                  |                         |                      |
+| `PUSH(baz)`      | [match and push]                  | `PUSH_LITERAL("a")`     | [push without match] |
 | `POP`            | [match and pop]                   | `PEEK`                  | [match without pop]  |
 | `DROP`           | [pop without matching]            | `PEEK_ALL`              | [match entire stack] |
 
@@ -607,8 +617,9 @@ Demonstration
 [between *m* and *n* (inclusive)]: #repetition
 [positive predicate]: #predicates
 [negative predicate]: #predicates
-[match and push]: #the-stack-wip
-[match and pop]: #the-stack-wip
-[match without pop]: #the-stack-wip
+[match and push]: #the-stack
+[match and pop]: #the-stack
+[match without pop]: #the-stack
+[push without match]: #the-stack
 [pop without matching]: #indentation-sensitive-languages
 [match entire stack]: #indentation-sensitive-languages
