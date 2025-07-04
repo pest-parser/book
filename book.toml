@@ -1,7 +1,7 @@
 [book]
 title = "A thoughtful introduction to the pest parser"
 description = "An introduction to the pest parser by implementing a Rust grammar subset"
-authors = ["Dragoș Tiselice"]
+authors = ["Dragoș Tiselice", "Tomas Tauber"]
 language = "en"
 
 [output.html]

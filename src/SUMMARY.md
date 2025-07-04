@@ -13,4 +13,4 @@
     - [Example: The J language](examples/jlang.md)
 - [Operator precedence](precedence.md)
     - [Example: Calculator](examples/calculator.md)
-- [Final project: Awk clone (WIP)](examples/awk.md)
+- [Final project: AWK clone](examples/awk.md)
