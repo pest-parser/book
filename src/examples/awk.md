@@ -87,7 +87,7 @@ string = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 ```
 
-The `@` modifier makes these rules *atomic*, meaning whitespace is not allowed within them and they cannot be broken down further during parsing.
+The `@` modifier makes these rules *atomic*, meaning implicit comments or whitespaces are not processed within them.
 
 ### AWK-Specific Constructs
 
@@ -130,11 +130,11 @@ mul_assign = { "*=" }
 div_assign = { "/=" }
 mod_assign = { "%=" }
 
-// Comparison operators (order matters for tokenization in PEG!)
+// Comparison operators
 eq = { "==" }
 ne = { "!=" }
-le = { "<=" }  // Must come before "<" to avoid tokenizing "<=" as "<" + "="
-ge = { ">=" }  // Must come before ">" to avoid tokenizing ">=" as ">" + "="
+le = { "<=" }  // Must come before "<" to avoid tokenizing "<=" as "<" + "=" in the `infix_op` rule later
+ge = { ">=" }  // Must come before ">" to avoid tokenizing ">=" as ">" + "=" in the `infix_op` rule later
 lt = { "<" }
 gt = { ">" }
 match_op = { "~" }
@@ -150,7 +150,7 @@ increment = { "++" }
 decrement = { "--" }
 ```
 
-Notice how longer operators are defined before shorter ones - this prevents tokenization conflicts where `<=` might be incorrectly parsed as `<` followed by `=`.
+Notice how longer operators are defined before shorter ones in the `infix_op` rule later: this prevents tokenization conflicts where `<=` might be incorrectly parsed as `<` followed by `=`.
 
 ### Expression Grammar
 
@@ -286,12 +286,12 @@ impl std::fmt::Display for Value {
         match self {
             Value::Number(n) => {
                 if n.fract() == 0.0 {
-                    write!(f, "{}", *n as i64)  // Print integers without decimal
+                    write!(f, "{}", *n as i64) // Print integers without decimal
                 } else {
-                    write!(f, "{}", n)
+                    write!(f, "{n}")
                 }
-            },
-            Value::String(s) => write!(f, "{}", s),
+            }
+            Value::String(s) => write!(f, "{s}"),
         }
     }
 }
@@ -304,7 +304,7 @@ impl std::fmt::Display for Value {
 3. **Idiomatic Rust**: Following standard library conventions makes our code more familiar to Rust developers
 4. **Consistency**: The same formatting logic is used whether we call `to_string()` or use the value in string interpolation
 
-This approach also demonstrates proper Rust trait usage - rather than defining our own string conversion method, we implement the standard trait that the ecosystem expects.
+This approach also demonstrates proper Rust trait usage: rather than defining our own string conversion method, we implement the standard trait that the ecosystem expects.
 
 ### Expression AST
 
@@ -705,14 +705,12 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
             }
             Ok(Statement::Print(exprs))
         },
-        
         Rule::assignment => {
             let mut inner = pair.into_inner();
             let target_pair = inner.next().unwrap();
             let op_pair = inner.next().unwrap();
             let value_pair = inner.next().unwrap();
             
-            // Parse assignment target (variable or field reference)
             let target = match target_pair.as_rule() {
                 Rule::identifier => AssignTarget::Identifier(target_pair.as_str().to_string()),
                 Rule::field_ref => {
@@ -722,7 +720,6 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
                 _ => return Err(anyhow!("Invalid assignment target")),
             };
             
-            // Parse assignment operator
             let op = match op_pair.as_rule() {
                 Rule::assign => AssignOp::Assign,
                 Rule::add_assign => AssignOp::AddAssign,
@@ -737,8 +734,97 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
             
             Ok(Statement::Assignment { target, op, value })
         },
-        
-        // Additional statement types would be implemented similarly...
+        Rule::increment_stmt => {
+            let mut inner = pair.into_inner();
+            let target_pair = inner.next().unwrap();
+            
+            let target = match target_pair.as_rule() {
+                Rule::identifier => AssignTarget::Identifier(target_pair.as_str().to_string()),
+                Rule::field_ref => {
+                    let expr = parse_atom_expr(target_pair.into_inner())?;
+                    AssignTarget::FieldRef(expr)
+                },
+                _ => return Err(anyhow!("Invalid increment target")),
+            };
+            
+            Ok(Statement::Increment(target))
+        },
+        Rule::decrement_stmt => {
+            let mut inner = pair.into_inner();
+            let target_pair = inner.next().unwrap();
+            
+            let target = match target_pair.as_rule() {
+                Rule::identifier => AssignTarget::Identifier(target_pair.as_str().to_string()),
+                Rule::field_ref => {
+                    let expr = parse_atom_expr(target_pair.into_inner())?;
+                    AssignTarget::FieldRef(expr)
+                },
+                _ => return Err(anyhow!("Invalid decrement target")),
+            };
+            
+            Ok(Statement::Decrement(target))
+        },
+        Rule::if_stmt => {
+            let mut inner = pair.into_inner();
+            let condition = parse_expr(inner.next().unwrap().into_inner())?;
+            let then_stmt = Box::new(parse_statement(inner.next().unwrap())?);
+            let else_stmt = if let Some(else_pair) = inner.next() {
+                Some(Box::new(parse_statement(else_pair)?))
+            } else {
+                None
+            };
+            Ok(Statement::If { condition, then_stmt, else_stmt })
+        },
+        Rule::while_stmt => {
+            let mut inner = pair.into_inner();
+            let condition_pair = inner.next().unwrap();
+            let condition = parse_expr(condition_pair.into_inner())?;
+            let body = Box::new(parse_statement(inner.next().unwrap())?);
+            Ok(Statement::While { condition, body })
+        },
+        Rule::for_stmt => {
+            let inner = pair.into_inner();
+            let mut init = None;
+            let mut condition = None;
+            let mut update = None;
+            let mut body = None;
+            
+            for part in inner {
+                match part.as_rule() {
+                    Rule::assignment => {
+                        if init.is_none() {
+                            init = Some(Box::new(parse_statement(part)?));
+                        } else {
+                            update = Some(Box::new(parse_statement(part)?));
+                        }
+                    },
+                    Rule::expr => {
+                        condition = Some(parse_expr(part.into_inner())?);
+                    },
+                    Rule::statement => {
+                        body = Some(Box::new(parse_statement(part)?));
+                    },
+                    _ => {},
+                }
+            }
+            
+            Ok(Statement::For {
+                init,
+                condition,
+                update,
+                body: body.unwrap(),
+            })
+        },
+        Rule::block => {
+            let mut statements = Vec::new();
+            for inner in pair.into_inner() {
+                statements.push(parse_statement(inner)?);
+            }
+            Ok(Statement::Block(statements))
+        },
+        Rule::expr_stmt => {
+            Ok(Statement::Expression(parse_expr(pair.into_inner())?))
+        },
         _ => Err(anyhow!("Unsupported statement type: {:?}", pair.as_rule())),
     }
 }
@@ -1038,7 +1124,7 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
     match stmt {
         Statement::Print(exprs) => {
             if exprs.is_empty() {
-                // print with no arguments prints $0
+                // Print $0
                 print!("{}{}", self.fields[0], self.output_record_separator);
             } else {
                 let values: Result<Vec<_>> = exprs.iter()
@@ -1046,17 +1132,13 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                     .collect();
                 let values = values?;
                 let output: Vec<String> = values.iter()
-                    .map(|v| v.to_string())  // Uses our Display implementation automatically
+                    .map(|v| v.to_string())
                     .collect();
-                print!("{}{}", 
-                    output.join(&self.output_field_separator), 
-                    self.output_record_separator);
+                print!("{}{}", output.join(&self.output_field_separator), self.output_record_separator);
             }
         },
-        
         Statement::Assignment { target, op, value } => {
             let new_value = self.eval_expr(value)?;
-            
             match target {
                 AssignTarget::Identifier(name) => {
                     let final_value = match op {
@@ -1067,39 +1149,111 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                                 .unwrap_or(Value::Number(0.0));
                             Value::Number(current.to_number() + new_value.to_number())
                         },
-                        // ... other compound assignment operators
+                        AssignOp::SubAssign => {
+                            let current = self.variables.get(name)
+                                .cloned()
+                                .unwrap_or(Value::Number(0.0));
+                            Value::Number(current.to_number() - new_value.to_number())
+                        },
+                        AssignOp::MulAssign => {
+                            let current = self.variables.get(name)
+                                .cloned()
+                                .unwrap_or(Value::Number(0.0));
+                            Value::Number(current.to_number() * new_value.to_number())
+                        },
+                        AssignOp::DivAssign => {
+                            let current = self.variables.get(name)
+                                .cloned()
+                                .unwrap_or(Value::Number(0.0));
+                            Value::Number(current.to_number() / new_value.to_number())
+                        },
+                        AssignOp::ModAssign => {
+                            let current = self.variables.get(name)
+                                .cloned()
+                                .unwrap_or(Value::Number(0.0));
+                            Value::Number(current.to_number() % new_value.to_number())
+                        },
                     };
-                    
                     self.variables.insert(name.clone(), final_value);
                     
-                    // Update internal state if built-in variables are modified
-                    match name.as_str() {
-                        "FS" => self.field_separator = self.variables.get("FS").unwrap().to_string(),
-                        "OFS" => self.output_field_separator = self.variables.get("OFS").unwrap().to_string(),
-                        "RS" => self.record_separator = self.variables.get("RS").unwrap().to_string(),
-                        "ORS" => self.output_record_separator = self.variables.get("ORS").unwrap().to_string(),
-                        _ => {},
+                    // Update separators if built-in variables are modified
+                    if name == "FS" {
+                        self.field_separator = self.variables.get("FS").unwrap().to_string();
+                    } else if name == "OFS" {
+                        self.output_field_separator = self.variables.get("OFS").unwrap().to_string();
+                    } else if name == "RS" {
+                        self.record_separator = self.variables.get("RS").unwrap().to_string();
+                    } else if name == "ORS" {
+                        self.output_record_separator = self.variables.get("ORS").unwrap().to_string();
                     }
                 },
-                
                 AssignTarget::FieldRef(field_expr) => {
                     let index = self.eval_expr(field_expr)?;
                     let idx = index.to_number() as usize;
                     
-                    // Extend fields array if necessary (AWK allows assignment to $NF+1)
+                    // Extend fields array if necessary
                     while self.fields.len() <= idx {
                         self.fields.push("".to_string());
                     }
                     
                     self.fields[idx] = new_value.to_string();
                     
-                    // Update NF when fields are extended
+                    // Update NF
                     self.variables.insert("NF".to_string(), 
                         Value::Number((self.fields.len() - 1) as f64));
                 },
             }
         },
-        
+        Statement::Increment(target) => {
+            match target {
+                AssignTarget::Identifier(name) => {
+                    let current = self.variables.get(name)
+                        .cloned()
+                        .unwrap_or(Value::Number(0.0));
+                    let new_value = Value::Number(current.to_number() + 1.0);
+                    self.variables.insert(name.clone(), new_value);
+                },
+                AssignTarget::FieldRef(field_expr) => {
+                    let index = self.eval_expr(field_expr)?;
+                    let idx = index.to_number() as usize;
+                    
+                    while self.fields.len() <= idx {
+                        self.fields.push("".to_string());
+                    }
+                    
+                    let current = self.fields[idx].parse::<f64>().unwrap_or(0.0);
+                    self.fields[idx] = (current + 1.0).to_string();
+                    
+                    self.variables.insert("NF".to_string(), 
+                        Value::Number((self.fields.len() - 1) as f64));
+                },
+            }
+        },
+        Statement::Decrement(target) => {
+            match target {
+                AssignTarget::Identifier(name) => {
+                    let current = self.variables.get(name)
+                        .cloned()
+                        .unwrap_or(Value::Number(0.0));
+                    let new_value = Value::Number(current.to_number() - 1.0);
+                    self.variables.insert(name.clone(), new_value);
+                },
+                AssignTarget::FieldRef(field_expr) => {
+                    let index = self.eval_expr(field_expr)?;
+                    let idx = index.to_number() as usize;
+                    
+                    while self.fields.len() <= idx {
+                        self.fields.push("".to_string());
+                    }
+                    
+                    let current = self.fields[idx].parse::<f64>().unwrap_or(0.0);
+                    self.fields[idx] = (current - 1.0).to_string();
+                    
+                    self.variables.insert("NF".to_string(), 
+                        Value::Number((self.fields.len() - 1) as f64));
+                },
+            }
+        },
         Statement::If { condition, then_stmt, else_stmt } => {
             let cond_val = self.eval_expr(condition)?;
             if cond_val.is_truthy() {
@@ -1108,15 +1262,12 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                 self.execute_statement(else_branch)?;
             }
         },
-        
         Statement::While { condition, body } => {
             while self.eval_expr(condition)?.is_truthy() {
                 self.execute_statement(body)?;
             }
         },
-        
         Statement::For { init, condition, update, body } => {
-            // C-style for loop: for(init; condition; update) body
             if let Some(init_stmt) = init {
                 self.execute_statement(init_stmt)?;
             }
@@ -1135,17 +1286,12 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                 }
             }
         },
-        
         Statement::Block(statements) => {
             self.execute_statements(statements)?;
         },
-        
         Statement::Expression(expr) => {
-            // Execute expression for side effects (like function calls)
             self.eval_expr(expr)?;
         },
-        
-        // ... other statement types
     }
     Ok(())
 }
@@ -1370,6 +1516,7 @@ Bob,30,Sales" | cargo run -- -F "," -p '{ print $1, ": ", $3 }'
 # Reading program from file
 echo '$2 > 30 { print $1, "is over 30" }' > filter.awk
 cargo run -- -f filter.awk employees.txt
+```
 
 ## Key Implementation Insights and Lessons Learned
 
@@ -1466,12 +1613,12 @@ mod tests {
     fn test_expression_evaluation() {
         let interpreter = Interpreter::new();
         // Test that "25" > "100" evaluates correctly (numerically)
-        let expr = BinaryOp {
+        let expr = Expr::BinaryOp {
             op: BinOp::Gt,
             left: Box::new(Expr::String("25".to_string())),
             right: Box::new(Expr::String("100".to_string())),
         };
-        let result = interpreter.eval_expr(&Expr::BinaryOp(expr)).unwrap();
+        let result = interpreter.eval_expr(&expr).unwrap();
         assert_eq!(result.to_number(), 0.0);  // 25 > 100 is false
     }
 }
@@ -1526,6 +1673,6 @@ The key insights from this project:
 
 This AWK implementation serves as both a practical tool and an educational example of how to build robust, efficient language processors in Rust. The techniques and patterns demonstrated here apply broadly to any language implementation project, from simple DSLs to full-featured programming languages.
 
-You can find the complete source code for this project, including additional features and comprehensive tests, in the [book's GitHub repository](https://github.com/pest-parser/book/tree/master/examples/awk-clone).
+You can find the complete source code for this project in the [book's GitHub repository](https://github.com/pest-parser/book/tree/master/examples/awk).
 
 [Awk]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/awk.html

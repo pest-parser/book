@@ -1,0 +1,133 @@
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
+COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
+
+// Numbers support both integers and floating-point
+number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT*)? }
+
+// Strings are double-quoted (AWK also supports single quotes, but we'll keep it simple)
+string = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+
+// Identifiers start with letter or underscore, contain alphanumeric or underscore
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
+// Field references: $0 (whole record), $1 (first field), $2 (second field), etc.
+field_ref = { "$" ~ atom_expr }
+
+// Atomic expressions for field references to ensure proper operator precedence
+atom_expr = _{ number | identifier | builtin_var | "(" ~ expr ~ ")" }
+
+// Built-in variables that AWK provides
+builtin_var = { "NR" | "NF" | "FS" | "RS" | "OFS" | "ORS" }
+
+// Regular expression literals enclosed in forward slashes
+regex = @{ "/" ~ (!"/" ~ ANY)* ~ "/" }
+
+// Arithmetic operators
+add = { "+" }
+subtract = { "-" }
+multiply = { "*" }
+divide = { "/" }
+modulo = { "%" }
+power = { "^" | "**" }
+
+// Assignment operators
+assign = { "=" }
+add_assign = { "+=" }
+sub_assign = { "-=" }
+mul_assign = { "*=" }
+div_assign = { "/=" }
+mod_assign = { "%=" }
+
+// Comparison operators
+eq = { "==" }
+ne = { "!=" }
+le = { "<=" }  // Must come before "<" to avoid tokenizing "<=" as "<" + "=" in the `infix_op` rule later
+ge = { ">=" }  // Must come before ">" to avoid tokenizing ">=" as ">" + "=" in the `infix_op` rule later
+lt = { "<" }
+gt = { ">" }
+match_op = { "~" }
+not_match = { "!~" }
+
+// Logical operators
+logical_and = { "&&" }
+logical_or = { "||" }
+logical_not = { "!" }
+
+// Increment/decrement
+increment = { "++" }
+decrement = { "--" }
+
+// Primary expressions (atoms that cannot be broken down further)
+atom = _{ 
+    number | 
+    string | 
+    field_ref | 
+    builtin_var | 
+    identifier | 
+    "(" ~ expr ~ ")" 
+}
+
+// Expression structure for Pratt parser
+expr = { atom ~ (infix_op ~ atom)* }
+
+// All infix operations that the Pratt parser will handle
+infix_op = _{
+    add | subtract | multiply | divide | modulo | power |
+    eq | ne | le | ge | lt | gt | match_op | not_match |
+    logical_and | logical_or
+}
+
+// Variable and field assignment
+assignment = { (identifier | field_ref) ~ (assign | add_assign | sub_assign | mul_assign | div_assign | mod_assign) ~ expr }
+
+// Increment and decrement statements
+increment_stmt = { (identifier | field_ref) ~ increment }
+decrement_stmt = { (identifier | field_ref) ~ decrement }
+
+// Print statement with optional arguments
+print_stmt = { "print" ~ print_args? }
+print_args = { expr ~ ("," ~ expr)* }
+
+// Control flow
+if_stmt = { "if" ~ "(" ~ expr ~ ")" ~ statement ~ ("else" ~ statement)? }
+while_stmt = { "while" ~ "(" ~ expr ~ ")" ~ statement }
+for_stmt = { "for" ~ "(" ~ assignment? ~ ";" ~ expr? ~ ";" ~ assignment? ~ ")" ~ statement }
+
+// Block statements
+block = { "{" ~ statement* ~ "}" }
+
+// Expression as statement
+expr_stmt = { expr }
+
+// Union of all statement types
+statement = _{
+    assignment |
+    increment_stmt |
+    decrement_stmt |
+    print_stmt |
+    if_stmt |
+    while_stmt |
+    for_stmt |
+    block |
+    expr_stmt
+}
+
+// Pattern types
+begin_pattern = { "BEGIN" }
+end_pattern = { "END" }
+regex_pattern = { regex }
+expr_pattern = { expr }
+
+pattern = _{
+    begin_pattern |
+    end_pattern |
+    regex_pattern |
+    expr_pattern
+}
+
+// AWK rules: pattern + action, action only, or pattern only
+rule = { (pattern ~ action) | action | pattern }
+action = { "{" ~ statement* ~ "}" }
+
+// Complete program
+program = { SOI ~ rule* ~ EOI }
