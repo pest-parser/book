@@ -1,5 +1,5 @@
 use crate::ast::*;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -73,6 +73,7 @@ impl Interpreter {
             for rule in &program.rules {
                 match &rule.pattern {
                     Some(Pattern::Regex(regex_str)) => {
+                        // TODO: regex can be cached and compiled once
                         let regex = Regex::new(regex_str)?;
                         if regex.is_match(record) {
                             self.execute_statements(&rule.action)?;
@@ -184,7 +185,13 @@ impl Interpreter {
             BinOp::Add => Ok(Value::Number(left.to_number() + right.to_number())),
             BinOp::Sub => Ok(Value::Number(left.to_number() - right.to_number())),
             BinOp::Mul => Ok(Value::Number(left.to_number() * right.to_number())),
-            BinOp::Div => Ok(Value::Number(left.to_number() / right.to_number())),
+            BinOp::Div => {
+                let divisor = right.to_number();
+                if divisor == 0.0 {
+                    return Err(anyhow!("Division by zero"));
+                }
+                Ok(Value::Number(left.to_number() / divisor))
+            }
             BinOp::Mod => Ok(Value::Number(left.to_number() % right.to_number())),
             BinOp::Pow => Ok(Value::Number(left.to_number().powf(right.to_number()))),
 

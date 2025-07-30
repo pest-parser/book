@@ -2,7 +2,7 @@
 
 This chapter walks through the creation of a complete AWK clone, providing a comprehensive example of how to build a domain-specific language using `pest`. This project demonstrates many advanced parsing concepts and showcases a complete Rust ecosystem solution for language implementation.
 
-AWK is a pattern-scanning and data-extraction language that excels at processing structured text files. Our implementation will support:
+[AWK](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/awk.html) is a pattern-scanning and data-extraction language that excels at processing structured text files. Our implementation will support:
 - Pattern-action programming model
 - Regular expression matching
 - Field and record processing
@@ -52,7 +52,7 @@ Besides the dependencies for `pest`, we make use of the following crates:
 ## Understanding AWK's Structure
 
 AWK programs follow a simple but powerful pattern-action model:
-```
+```awk
 pattern { action }
 ```
 
@@ -84,7 +84,7 @@ number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT*)? }
 string = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 
 // Identifiers start with letter or underscore, contain alphanumeric or underscore
-identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+identifier = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 ```
 
 The `@` modifier makes these rules *atomic*, meaning implicit comments or whitespaces are not processed within them.
@@ -841,7 +841,7 @@ The interpreter maintains several critical pieces of state that reflect AWK's ex
 ```rust
 use std::collections::HashMap;
 use regex::Regex;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use crate::ast::*;
 
 pub struct Interpreter {
@@ -1056,35 +1056,77 @@ fn eval_binary_op(&self, op: &BinOp, left: &Value, right: &Value) -> Result<Valu
         BinOp::Add => Ok(Value::Number(left.to_number() + right.to_number())),
         BinOp::Sub => Ok(Value::Number(left.to_number() - right.to_number())),
         BinOp::Mul => Ok(Value::Number(left.to_number() * right.to_number())),
-        BinOp::Div => Ok(Value::Number(left.to_number() / right.to_number())),
+        BinOp::Div => {
+            let divisor = right.to_number();
+            if divisor == 0.0 {
+                return Err(anyhow!("Division by zero"));
+            }
+            Ok(Value::Number(left.to_number() / divisor))
+        }
         BinOp::Mod => Ok(Value::Number(left.to_number() % right.to_number())),
         BinOp::Pow => Ok(Value::Number(left.to_number().powf(right.to_number()))),
-        
+
         // Comparison operations: return 1.0 for true, 0.0 for false
-        BinOp::Eq => Ok(Value::Number(if self.values_equal(left, right) { 1.0 } else { 0.0 })),
-        BinOp::Ne => Ok(Value::Number(if !self.values_equal(left, right) { 1.0 } else { 0.0 })),
-        BinOp::Lt => Ok(Value::Number(if left.to_number() < right.to_number() { 1.0 } else { 0.0 })),
-        BinOp::Le => Ok(Value::Number(if left.to_number() <= right.to_number() { 1.0 } else { 0.0 })),
-        BinOp::Gt => Ok(Value::Number(if left.to_number() > right.to_number() { 1.0 } else { 0.0 })),
-        BinOp::Ge => Ok(Value::Number(if left.to_number() >= right.to_number() { 1.0 } else { 0.0 })),
-        
+        BinOp::Eq => Ok(Value::Number(if self.values_equal(left, right) {
+            1.0
+        } else {
+            0.0
+        })),
+        BinOp::Ne => Ok(Value::Number(if !self.values_equal(left, right) {
+            1.0
+        } else {
+            0.0
+        })),
+        BinOp::Lt => Ok(Value::Number(if left.to_number() < right.to_number() {
+            1.0
+        } else {
+            0.0
+        })),
+        BinOp::Le => Ok(Value::Number(if left.to_number() <= right.to_number() {
+            1.0
+        } else {
+            0.0
+        })),
+        BinOp::Gt => Ok(Value::Number(if left.to_number() > right.to_number() {
+            1.0
+        } else {
+            0.0
+        })),
+        BinOp::Ge => Ok(Value::Number(if left.to_number() >= right.to_number() {
+            1.0
+        } else {
+            0.0
+        })),
+
         // Pattern matching operations: use regex crate
         BinOp::Match => {
-            let text = left.to_string();     // Display trait converts Value to String
+            let text = left.to_string(); // Display trait converts Value to String
             let pattern = right.to_string(); // Works for both Number and String variants
             let regex = Regex::new(&pattern)?;
             Ok(Value::Number(if regex.is_match(&text) { 1.0 } else { 0.0 }))
-        },
+        }
         BinOp::NotMatch => {
-            let text = left.to_string();     // Display trait ensures consistent formatting
+            let text = left.to_string(); // Display trait ensures consistent formatting
             let pattern = right.to_string();
             let regex = Regex::new(&pattern)?;
-            Ok(Value::Number(if !regex.is_match(&text) { 1.0 } else { 0.0 }))
-        },
-        
+            Ok(Value::Number(if !regex.is_match(&text) {
+                1.0
+            } else {
+                0.0
+            }))
+        }
+
         // Logical operations: use AWK truthiness rules
-        BinOp::And => Ok(Value::Number(if left.is_truthy() && right.is_truthy() { 1.0 } else { 0.0 })),
-        BinOp::Or => Ok(Value::Number(if left.is_truthy() || right.is_truthy() { 1.0 } else { 0.0 })),
+        BinOp::And => Ok(Value::Number(if left.is_truthy() && right.is_truthy() {
+            1.0
+        } else {
+            0.0
+        })),
+        BinOp::Or => Ok(Value::Number(if left.is_truthy() || right.is_truthy() {
+            1.0
+        } else {
+            0.0
+        })),
     }
 }
 
@@ -1651,12 +1693,12 @@ The real-world robust benchmarking can also use the excellent [criterion](https:
 
 The foundation we've built can be extended in many directions:
 
-* **Additional Built-ins**: Functions like `substr()`, `length()`, `gsub()`, mathematical functions
-* **Arrays**: Associative arrays are a key AWK feature we haven't implemented
-* **User-defined Functions**: Function definitions and calls
-* **Advanced I/O**: File I/O operations, pipes, and input redirection
-* **Optimization**: Constant folding, dead code elimination, JIT compilation
-* **Debugging**: Source-level debugging support with breakpoints and variable inspection
+- **Additional Built-ins**: Functions like `substr()`, `length()`, `gsub()`, mathematical functions
+- **Arrays**: Associative arrays are a key AWK feature we haven't implemented
+- **User-defined Functions**: Function definitions and calls
+- **Advanced I/O**: File I/O operations, pipes, and input redirection
+- **Optimization**: Constant folding, dead code elimination, JIT compilation
+- **Debugging**: Source-level debugging support with breakpoints and variable inspection
 
 ### Conclusion
 
@@ -1674,5 +1716,3 @@ The key insights from this project:
 This AWK implementation serves as both a practical tool and an educational example of how to build robust, efficient language processors in Rust. The techniques and patterns demonstrated here apply broadly to any language implementation project, from simple DSLs to full-featured programming languages.
 
 You can find the complete source code for this project in the [book's GitHub repository](https://github.com/pest-parser/book/tree/master/examples/awk).
-
-[Awk]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/awk.html

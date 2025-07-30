@@ -4,13 +4,14 @@ COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
 // Numbers support both integers and floating-point
 number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT*)? }
 
-// Strings are double-quoted (AWK also supports single quotes, but we'll keep it simple)
+// Strings are double-quoted (Note: AWK also supports single quotes, but we'll keep it simple)
 string = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 
 // Identifiers start with letter or underscore, contain alphanumeric or underscore
-identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+identifier = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 
 // Field references: $0 (whole record), $1 (first field), $2 (second field), etc.
+// Note: AWK could also support nested references e.g. $$1 which isn't supported here
 field_ref = { "$" ~ atom_expr }
 
 // Atomic expressions for field references to ensure proper operator precedence
