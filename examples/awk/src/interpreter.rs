@@ -192,7 +192,13 @@ impl Interpreter {
                 }
                 Ok(Value::Number(left.to_number() / divisor))
             }
-            BinOp::Mod => Ok(Value::Number(left.to_number() % right.to_number())),
+            BinOp::Mod => {
+                let divisor = right.to_number();
+                if divisor == 0.0 {
+                    return Err(anyhow!("Modulo by zero"));
+                }
+                Ok(Value::Number(left.to_number() % divisor))
+            }
             BinOp::Pow => Ok(Value::Number(left.to_number().powf(right.to_number()))),
 
             // Comparison operations: return 1.0 for true, 0.0 for false
