@@ -137,8 +137,8 @@ le = { "<=" }  // Must come before "<" to avoid tokenizing "<=" as "<" + "=" in 
 ge = { ">=" }  // Must come before ">" to avoid tokenizing ">=" as ">" + "=" in the `infix_op` rule later
 lt = { "<" }
 gt = { ">" }
-match_op = { "~" }
 not_match = { "!~" }
+match_op = { "~" }
 
 // Logical operators
 logical_and = { "&&" }
@@ -173,7 +173,7 @@ expr = { atom ~ (infix_op ~ atom)* }
 // All infix operations that the Pratt parser will handle
 infix_op = _{
     add | subtract | multiply | divide | modulo | power |
-    eq | ne | le | ge | lt | gt | match_op | not_match |
+    eq | ne | le | ge | lt | gt | not_match | match_op |
     logical_and | logical_or
 }
 ```
@@ -936,7 +936,12 @@ pub fn run_program(&mut self, program: &Program, input: &str) -> Result<()> {
                 },
                 Some(Pattern::Expression(expr)) => {
                     if self.eval_expr(expr)?.is_truthy() {
-                        self.execute_statements(&rule.action)?;
+                        if rule.action.is_empty() {
+                            // If action is empty, print $0
+                            println!("{}", self.fields[0]);
+                        } else {
+                            self.execute_statements(&rule.action)?;
+                        }
                     }
                 },
                 None => {

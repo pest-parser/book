@@ -81,7 +81,12 @@ impl Interpreter {
                     }
                     Some(Pattern::Expression(expr)) => {
                         if self.eval_expr(expr)?.is_truthy() {
-                            self.execute_statements(&rule.action)?;
+                            if rule.action.is_empty() {
+                                // If action is empty, print $0
+                                println!("{}", self.fields[0]);
+                            } else {
+                                self.execute_statements(&rule.action)?;
+                            }
                         }
                     }
                     None => {
