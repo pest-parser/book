@@ -12,6 +12,12 @@ For example, here is a CSV file with numeric fields:
 -40,-273.15
 13,42
 65537
+
+```
+
+NOTE: you _must_ leave a carriage return at the end of the last line ("65537") otherwise the parser will fail with the following error: 
+```rust
+unsuccessful parse: Error { variant: ParsingError { positives: [EOI], negatives: [] }, location: Pos(75), line_col: Pos((5, 1)), path: None, line: "65537", continued_line: None, parse_attempts: None }
 ```
 
 Let's write a program that computes the **sum of these fields** and counts the
