@@ -38,7 +38,7 @@ fn serialize_jsonvalue(val: &JSONValue) -> String {
     }
 }
 
-fn parse_json_file(file: &str) -> Result<JSONValue, Error<Rule>> {
+fn parse_json_file(file: &str) -> Result<JSONValue<'_>, Error<Rule>> {
     use pest::iterators::Pair;
 
     let json = JSONParser::parse(Rule::json, file)?.next().unwrap();

@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use crate::ast::*;
 use anyhow::{Result, anyhow};
 use pest::Parser;
@@ -8,25 +10,23 @@ use pest::pratt_parser::{Assoc, Op, PrattParser};
 #[grammar = "awk.pest"]
 pub struct AwkParser;
 
-lazy_static::lazy_static! {
-    static ref PRATT_PARSER: PrattParser<Rule> = {
-        use Rule::*;
-        use Assoc::*;
+static PRATT_PARSER: LazyLock<PrattParser<Rule>> = LazyLock::new(|| {
+    use Rule::*;
+    use Assoc::*;
 
-        PrattParser::new()
-            // Lowest precedence first
-            .op(Op::infix(logical_or, Left))           // ||
-            .op(Op::infix(logical_and, Left))          // &&
-            .op(Op::infix(eq, Left) | Op::infix(ne, Left))                    // == !=
-            .op(Op::infix(le, Left) | Op::infix(ge, Left) | Op::infix(lt, Left) | Op::infix(gt, Left))  // <= >= < >
-            .op(Op::infix(match_op, Left) | Op::infix(not_match, Left))       // ~ !~
-            .op(Op::infix(add, Left) | Op::infix(subtract, Left))             // + -
-            .op(Op::infix(multiply, Left) | Op::infix(divide, Left) | Op::infix(modulo, Left))  // * / %
-            .op(Op::infix(power, Right))               // ^ ** (right-associative)
-            // Highest precedence
-            .op(Op::prefix(logical_not) | Op::prefix(subtract))               // ! - (unary)
-    };
-}
+    PrattParser::new()
+        // Lowest precedence first
+        .op(Op::infix(logical_or, Left))           // ||
+        .op(Op::infix(logical_and, Left))          // &&
+        .op(Op::infix(eq, Left) | Op::infix(ne, Left))                    // == !=
+        .op(Op::infix(le, Left) | Op::infix(ge, Left) | Op::infix(lt, Left) | Op::infix(gt, Left))  // <= >= < >
+        .op(Op::infix(match_op, Left) | Op::infix(not_match, Left))       // ~ !~
+        .op(Op::infix(add, Left) | Op::infix(subtract, Left))             // + -
+        .op(Op::infix(multiply, Left) | Op::infix(divide, Left) | Op::infix(modulo, Left))  // * / %
+        .op(Op::infix(power, Right))               // ^ ** (right-associative)
+        // Highest precedence
+        .op(Op::prefix(logical_not) | Op::prefix(subtract))               // ! - (unary)
+});
 
 pub fn parse_program(input: &str) -> Result<Program> {
     let mut pairs = AwkParser::parse(Rule::program, input)?;

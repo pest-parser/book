@@ -1,25 +1,23 @@
 use pest::iterators::Pairs;
 use pest::pratt_parser::PrattParser;
 use pest::Parser;
-use std::io::{self, BufRead};
+use std::{io::{self, BufRead}, sync::LazyLock};
 
 #[derive(pest_derive::Parser)]
 #[grammar = "calculator.pest"]
 pub struct CalculatorParser;
 
-lazy_static::lazy_static! {
-    static ref PRATT_PARSER: PrattParser<Rule> = {
-        use pest::pratt_parser::{Assoc::*, Op};
-        use Rule::*;
+static PRATT_PARSER: LazyLock<PrattParser<Rule>> = LazyLock::new(|| {
+    use pest::pratt_parser::{Assoc::*, Op};
+    use Rule::*;
 
-        // Precedence is defined lowest to highest
-        PrattParser::new()
-            // Addition and subtract have equal precedence
-            .op(Op::infix(add, Left) | Op::infix(subtract, Left))
-            .op(Op::infix(multiply, Left) | Op::infix(divide, Left) | Op::infix(modulo, Left))
-            .op(Op::prefix(unary_minus))
-    };
-}
+    // Precedence is defined lowest to highest
+    PrattParser::new()
+        // Addition and subtract have equal precedence
+        .op(Op::infix(add, Left) | Op::infix(subtract, Left))
+        .op(Op::infix(multiply, Left) | Op::infix(divide, Left) | Op::infix(modulo, Left))
+        .op(Op::prefix(unary_minus))
+});
 
 #[derive(Debug)]
 pub enum Expr {

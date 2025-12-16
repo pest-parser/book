@@ -12,16 +12,16 @@ For our system we have the following operands:
 
 In the expression `1 + 2 - 3`, no operator is inherently more important than the other.
 Addition, subtraction, multiplication and division are evaluated from left to right,
-e.g. `1 - 2 + 3` is evaluated as `(1 - 2) + 3`. We call this property left associativity. 
-Operators can also be right associative. For example, we usually evaluate the statement `x = y = 1` by first 
+e.g. `1 - 2 + 3` is evaluated as `(1 - 2) + 3`. We call this property left associativity.
+Operators can also be right associative. For example, we usually evaluate the statement `x = y = 1` by first
 assigning `y = 1` and `x = 1` (or `x = y`) afterwards.
 
-Associativity only matters if two operators have the same precedence, as is the case with addition and subtraction for 
-example. This means that if we have an expression with only additions and subtractions, we can just evaluate it from 
+Associativity only matters if two operators have the same precedence, as is the case with addition and subtraction for
+example. This means that if we have an expression with only additions and subtractions, we can just evaluate it from
 left to right. `1 + 2 - 3` is equal to `(1 + 2) - 3`. And `1 - 2 + 3` is equal to `(1 - 2) + 3`.
 
-To go from a flat list of operands separated by operators, it suffices to define a precedence and associativity for each 
-operator. With these definitions an algorithm such as Pratt parsing is able to construct a corresponding 
+To go from a flat list of operands separated by operators, it suffices to define a precedence and associativity for each
+operator. With these definitions an algorithm such as Pratt parsing is able to construct a corresponding
 expression tree.
 
 If you are curious to know more about how Pratt parsing is implemented, Aleksey Kladov has a
@@ -57,7 +57,7 @@ bin_op = _{ add | subtract | multiply | divide }
 ```
 
 These two rules will be the input to the
-[`PrattParser`](https://docs.rs/pest/latest/pest/pratt_parser/struct.PrattParser.html). 
+[`PrattParser`](https://docs.rs/pest/latest/pest/pratt_parser/struct.PrattParser.html).
 It expects to receive atoms separated by operators, like so: `atom, bin_op, atom, bin_op, atom, ...`.
 
 Corresponding to this format, we define our rule for expressions:
@@ -100,33 +100,31 @@ pub enum Op {
 }
 ```
 
-Note the `Box<Expr>` required because Rust 
-[does not allow unboxed recursive types](https://doc.rust-lang.org/book/ch15-01-box.html#enabling-recursive-types-with-boxes). 
+Note the `Box<Expr>` required because Rust
+[does not allow unboxed recursive types](https://doc.rust-lang.org/book/ch15-01-box.html#enabling-recursive-types-with-boxes).
 
 There is no separate atom type, any atom is also a valid expression.
 
 ## Pratt parser
 The precedence of operations is defined in the Pratt parser.
 
-An easy approach is to define the PrattParser as global using [`lazy_static`](https://docs.rs/lazy_static/1.4.0/lazy_static/).
+An easy approach is to define the PrattParser as global using [`LazyLock`](https://doc.rust-lang.org/std/sync/struct.LazyLock.html).
 
-Adhering to standard rules of arithmetic, 
-we will define addition and subtraction to have lower priority than multiplication and division, 
+Adhering to standard rules of arithmetic,
+we will define addition and subtraction to have lower priority than multiplication and division,
 and make all operators left associative.
 
 ```rust
-lazy_static::lazy_static! {
-    static ref PRATT_PARSER: PrattParser<Rule> = {
-        use pest::pratt_parser::{Assoc::*, Op};
-        use Rule::*;
+static PRATT_PARSER: LazyLock<PrattParser<Rule>> = LazyLock::new(|| {
+    use pest::pratt_parser::{Assoc::*, Op};
+    use Rule::*;
 
-        // Precedence is defined lowest to highest
-        PrattParser::new()
-            // Addition and subtract have equal precedence
-            .op(Op::infix(add, Left) | Op::infix(subtract, Left))
-            .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
-    };
-}
+    // Precedence is defined lowest to highest
+    PrattParser::new()
+        // Addition and subtract have equal precedence
+        .op(Op::infix(add, Left) | Op::infix(subtract, Left))
+        .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
+});
 ```
 
 We are almost there, the only thing that's left is to use our Pratt parser.
@@ -205,11 +203,11 @@ Parsed: BinOp {
 ```
 
 ## Unary minus and parenthesis
-So far, our calculator can parse fairly complicated expressions, but it will fail if it encounters explicit parentheses 
+So far, our calculator can parse fairly complicated expressions, but it will fail if it encounters explicit parentheses
 or a unary minus sign. Let's fix that.
 
 ### Parentheses
-Consider the expression `(1 + 2) * 3`. Clearly removing the parentheses would give a different result, so we must 
+Consider the expression `(1 + 2) * 3`. Clearly removing the parentheses would give a different result, so we must
 support parsing such expressions. Luckily, this can be a simple addition to our `atom` rule:
 
 ```diff
@@ -218,7 +216,7 @@ support parsing such expressions. Luckily, this can be a simple addition to our 
 ```
 
 Earlier we said that atoms should be simple token sequences that cannot be split up further, but now an atom can contain
-arbitrary expressions! The reason we are okay with this is that the parentheses mark clear boundaries for the 
+arbitrary expressions! The reason we are okay with this is that the parentheses mark clear boundaries for the
 expression, it will not make ambiguous what operators belong to the inner expression and which to the outer one.
 
 ### Unary minus
@@ -234,5 +232,5 @@ We need the following change to grammar:
 
 For these last changes we've omitted the small changes to the AST and parsing logic (using `map_prefix`).
 
-You can find all these details in 
+You can find all these details in
 the repository: [github.com/pest-parser/book/tree/master/examples/pest-calculator](https://github.com/pest-parser/book/tree/master/examples/pest-calculator).

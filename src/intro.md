@@ -34,17 +34,15 @@ WHITESPACE = _{ " " | "\t" }
 And here is the function that uses that parser to calculate answers:
 
 ```rust
-lazy_static! {
-    static ref PRATT_PARSER: PrattParser<Rule> = {
-        use Rule::*;
-        use Assoc::*;
+static PRATT_PARSER: LazyLock<PrattParser<Rule>> = LazyLock::new(|| {
+    use Rule::*;
+    use Assoc::*;
 
-        PrattParser::new()
-            .op(Op::infix(add, Left) | Op::infix(subtract, Left))
-            .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
-            .op(Op::infix(power, Right))
-    };
-}
+    PrattParser::new()
+        .op(Op::infix(add, Left) | Op::infix(subtract, Left))
+        .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
+        .op(Op::infix(power, Right))
+});
 
 fn eval(expression: Pairs<Rule>) -> f64 {
     PRATT_PARSER

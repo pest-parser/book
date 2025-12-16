@@ -1,4 +1,3 @@
-use lazy_static::lazy_static;
 use pest_derive::Parser;
 use pest::Parser;
 
@@ -6,22 +5,21 @@ use pest::Parser;
 use pest::iterators::Pairs;
 use pest::pratt_parser::{Assoc, Op, PrattParser};
 use std::io::BufRead;
+use std::sync::LazyLock;
 
 #[derive(Parser)]
 #[grammar = "grammar.pest"]
 struct Calculator;
 
-lazy_static! {
-    static ref PRATT_PARSER: PrattParser<Rule> = {
-        use Rule::*;
-        use Assoc::*;
+static PRATT_PARSER: LazyLock<PrattParser<Rule>> = LazyLock::new(|| {
+    use Rule::*;
+    use Assoc::*;
 
-        PrattParser::new()
-            .op(Op::infix(add, Left) | Op::infix(subtract, Left))
-            .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
-            .op(Op::infix(power, Right))
-    };
-}
+    PrattParser::new()
+        .op(Op::infix(add, Left) | Op::infix(subtract, Left))
+        .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
+        .op(Op::infix(power, Right))
+});
 
 fn eval(expression: Pairs<Rule>) -> f64 {
     PRATT_PARSER

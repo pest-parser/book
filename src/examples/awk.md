@@ -36,7 +36,6 @@ pest_derive = "2.8"
 clap = { version = "4", features = ["derive"] }
 regex = "1.5"
 anyhow = "1"
-lazy_static = "1.4"
 ```
 
 Besides the dependencies for `pest`, we make use of the following crates:
@@ -47,8 +46,6 @@ Besides the dependencies for `pest`, we make use of the following crates:
 
 **`anyhow`**: A trait object-based error handling library that provides excellent error context which is perfect for a language interpreter where various errors can occur at parsing, compilation, or runtime.
 
-**`lazy_static`**: Allows us to create global static values that are computed at runtime. We'll use this for our Pratt parser configuration, which needs to be shared across parsing operations.
-
 ## Understanding AWK's Structure
 
 AWK programs follow a simple but powerful pattern-action model:
@@ -58,7 +55,7 @@ pattern { action }
 
 Patterns determine when actions execute:
 - `BEGIN` - executes before processing any input
-- `END` - executes after processing all input  
+- `END` - executes after processing all input
 - `/regex/` - executes when the regex matches the current record
 - `expression` - executes when the expression evaluates to true
 - No pattern - executes for every record
@@ -158,13 +155,13 @@ Our expression grammar uses a Pratt parser for proper operator precedence:
 
 ```pest
 // Primary expressions (atoms that cannot be broken down further)
-atom = _{ 
-    number | 
-    string | 
-    field_ref | 
-    builtin_var | 
-    identifier | 
-    "(" ~ expr ~ ")" 
+atom = _{
+    number |
+    string |
+    field_ref |
+    builtin_var |
+    identifier |
+    "(" ~ expr ~ ")"
 }
 
 // Expression structure for Pratt parser
@@ -270,7 +267,7 @@ impl Value {
             Value::String(s) => s.parse().unwrap_or(0.0),
         }
     }
-    
+
     // AWK truthiness: 0 and empty string are false, everything else is true
     pub fn is_truthy(&self) -> bool {
         match self {
@@ -316,21 +313,21 @@ pub enum Expr {
     // Literal values
     Number(f64),
     String(String),
-    
+
     // Variable references
     Identifier(String),           // User-defined variables
     BuiltinVar(String),          // Built-in variables like NR, NF
-    
+
     // Field access: $1, $2, $NF, etc.
     FieldRef(Box<Expr>),         // The Box prevents infinite recursion
-    
+
     // Binary operations: arithmetic, comparison, logical
     BinaryOp {
         op: BinOp,
         left: Box<Expr>,
         right: Box<Expr>,
     },
-    
+
     // Unary operations: negation, logical not
     UnaryOp {
         op: UnOp,
@@ -350,14 +347,14 @@ We model AWK's rich operator set with enums:
 pub enum BinOp {
     // Arithmetic
     Add, Sub, Mul, Div, Mod, Pow,
-    
+
     // Comparison
     Eq, Ne, Lt, Le, Gt, Ge,
-    
+
     // Pattern matching
     Match,          // ~  (regex match)
     NotMatch,       // !~ (regex non-match)
-    
+
     // Logical
     And, Or,
 }
@@ -382,36 +379,36 @@ pub enum Statement {
         op: AssignOp,
         value: Expr,
     },
-    
+
     // Increment/decrement: x++, --y, $1++
     Increment(AssignTarget),
     Decrement(AssignTarget),
-    
+
     // Print statement: print, print $1, print x, y, z
     Print(Vec<Expr>),
-    
+
     // Control flow
     If {
         condition: Expr,
         then_stmt: Box<Statement>,
         else_stmt: Option<Box<Statement>>,
     },
-    
+
     While {
         condition: Expr,
         body: Box<Statement>,
     },
-    
+
     For {
         init: Option<Box<Statement>>,
         condition: Option<Expr>,
         update: Option<Box<Statement>>,
         body: Box<Statement>,
     },
-    
+
     // Block statement: { stmt1; stmt2; stmt3 }
     Block(Vec<Statement>),
-    
+
     // Expression as statement (for side effects)
     Expression(Expr),
 }
@@ -487,28 +484,28 @@ The `#[derive(pest_derive::Parser)]` attribute generates the parser code from ou
 The Pratt parser handles operator precedence and associativity automatically. We need to configure it with AWK's operator precedence rules:
 
 ```rust
-lazy_static::lazy_static! {
-    static ref PRATT_PARSER: PrattParser<Rule> = {
-        use Rule::*;
-        use Assoc::*;
+use std::sync::LazyLock;
 
-        PrattParser::new()
-            // Lowest precedence first
-            .op(Op::infix(logical_or, Left))           // ||
-            .op(Op::infix(logical_and, Left))          // &&
-            .op(Op::infix(eq, Left) | Op::infix(ne, Left))                    // == !=
-            .op(Op::infix(le, Left) | Op::infix(ge, Left) | Op::infix(lt, Left) | Op::infix(gt, Left))  // <= >= < >
-            .op(Op::infix(match_op, Left) | Op::infix(not_match, Left))       // ~ !~
-            .op(Op::infix(add, Left) | Op::infix(subtract, Left))             // + -
-            .op(Op::infix(multiply, Left) | Op::infix(divide, Left) | Op::infix(modulo, Left))  // * / %
-            .op(Op::infix(power, Right))               // ^ ** (right-associative)
-            // Highest precedence
-            .op(Op::prefix(logical_not) | Op::prefix(subtract))               // ! - (unary)
-    };
-}
+static PRATT_PARSER: LazyLock<PrattParser<Rule>) = LazyLock::new(|| {
+    use Rule::*;
+    use Assoc::*;
+
+    PrattParser::new()
+        // Lowest precedence first
+        .op(Op::infix(logical_or, Left))           // ||
+        .op(Op::infix(logical_and, Left))          // &&
+        .op(Op::infix(eq, Left) | Op::infix(ne, Left))                    // == !=
+        .op(Op::infix(le, Left) | Op::infix(ge, Left) | Op::infix(lt, Left) | Op::infix(gt, Left))  // <= >= < >
+        .op(Op::infix(match_op, Left) | Op::infix(not_match, Left))       // ~ !~
+        .op(Op::infix(add, Left) | Op::infix(subtract, Left))             // + -
+        .op(Op::infix(multiply, Left) | Op::infix(divide, Left) | Op::infix(modulo, Left))  // * / %
+        .op(Op::infix(power, Right))               // ^ ** (right-associative)
+        // Highest precedence
+        .op(Op::prefix(logical_not) | Op::prefix(subtract))               // ! - (unary)
+});
 ```
 
-**Why `lazy_static`?** The Pratt parser configuration is expensive to compute and should be shared across all parsing operations. `lazy_static` allows us to compute it once at runtime and reuse it.
+**Why `LazyLock`?** The Pratt parser configuration is expensive to compute and should be shared across all parsing operations. `LazyLock` allows us to compute it once at runtime and reuse it.
 
 **Precedence Levels**: AWK follows standard mathematical precedence:
 1. Unary operators (`!`, `-`) - highest precedence
@@ -527,14 +524,14 @@ lazy_static::lazy_static! {
 pub fn parse_program(input: &str) -> Result<Program> {
     let mut pairs = AwkParser::parse(Rule::program, input)?;
     let program_pair = pairs.next().unwrap();
-    
+
     let mut rules = Vec::new();
     for rule_pair in program_pair.into_inner() {
         if rule_pair.as_rule() == Rule::rule {
             rules.push(parse_rule(rule_pair)?);
         }
     }
-    
+
     Ok(Program { rules })
 }
 ```
@@ -552,7 +549,7 @@ AWK rules can have various forms:
 fn parse_rule(pair: Pair<Rule>) -> Result<AwkRule> {
     let mut pattern = None;
     let mut action = Vec::new();
-    
+
     for inner in pair.into_inner() {
         match inner.as_rule() {
             Rule::begin_pattern => pattern = Some(Pattern::Begin),
@@ -574,7 +571,7 @@ fn parse_rule(pair: Pair<Rule>) -> Result<AwkRule> {
             _ => {},
         }
     }
-    
+
     Ok(AwkRule { pattern, action })
 }
 ```
@@ -665,7 +662,7 @@ Field references require special handling to ensure proper precedence:
 fn parse_atom_expr(pairs: Pairs<Rule>) -> Result<Expr> {
     let mut pairs = pairs;
     let primary = pairs.next().unwrap();
-    
+
     match primary.as_rule() {
         Rule::number => {
             Ok(Expr::Number(primary.as_str().parse().unwrap()))
@@ -710,7 +707,7 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
             let target_pair = inner.next().unwrap();
             let op_pair = inner.next().unwrap();
             let value_pair = inner.next().unwrap();
-            
+
             let target = match target_pair.as_rule() {
                 Rule::identifier => AssignTarget::Identifier(target_pair.as_str().to_string()),
                 Rule::field_ref => {
@@ -719,7 +716,7 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
                 },
                 _ => return Err(anyhow!("Invalid assignment target")),
             };
-            
+
             let op = match op_pair.as_rule() {
                 Rule::assign => AssignOp::Assign,
                 Rule::add_assign => AssignOp::AddAssign,
@@ -729,15 +726,15 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
                 Rule::mod_assign => AssignOp::ModAssign,
                 _ => return Err(anyhow!("Invalid assignment operator")),
             };
-            
+
             let value = parse_expr(value_pair.into_inner())?;
-            
+
             Ok(Statement::Assignment { target, op, value })
         },
         Rule::increment_stmt => {
             let mut inner = pair.into_inner();
             let target_pair = inner.next().unwrap();
-            
+
             let target = match target_pair.as_rule() {
                 Rule::identifier => AssignTarget::Identifier(target_pair.as_str().to_string()),
                 Rule::field_ref => {
@@ -746,13 +743,13 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
                 },
                 _ => return Err(anyhow!("Invalid increment target")),
             };
-            
+
             Ok(Statement::Increment(target))
         },
         Rule::decrement_stmt => {
             let mut inner = pair.into_inner();
             let target_pair = inner.next().unwrap();
-            
+
             let target = match target_pair.as_rule() {
                 Rule::identifier => AssignTarget::Identifier(target_pair.as_str().to_string()),
                 Rule::field_ref => {
@@ -761,7 +758,7 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
                 },
                 _ => return Err(anyhow!("Invalid decrement target")),
             };
-            
+
             Ok(Statement::Decrement(target))
         },
         Rule::if_stmt => {
@@ -788,7 +785,7 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
             let mut condition = None;
             let mut update = None;
             let mut body = None;
-            
+
             for part in inner {
                 match part.as_rule() {
                     Rule::assignment => {
@@ -807,7 +804,7 @@ fn parse_statement(pair: Pair<Rule>) -> Result<Statement> {
                     _ => {},
                 }
             }
-            
+
             Ok(Statement::For {
                 init,
                 condition,
@@ -847,14 +844,14 @@ use crate::ast::*;
 pub struct Interpreter {
     // Variable storage for user-defined and built-in variables
     variables: HashMap<String, Value>,
-    
+
     // Current record split into fields: fields[0] = whole record, fields[1] = $1, etc.
     fields: Vec<String>,
-    
+
     // Built-in variable state
     record_number: usize,           // NR - Number of records processed
     field_separator: String,        // FS - Field separator
-    output_field_separator: String, // OFS - Output field separator  
+    output_field_separator: String, // OFS - Output field separator
     record_separator: String,       // RS - Record separator
     output_record_separator: String, // ORS - Output record separator
 }
@@ -870,13 +867,13 @@ pub struct Interpreter {
 impl Interpreter {
     pub fn new() -> Self {
         let mut variables = HashMap::new();
-        
+
         // Initialize AWK's built-in variables with default values
         variables.insert("FS".to_string(), Value::String(" ".to_string()));
         variables.insert("OFS".to_string(), Value::String(" ".to_string()));
         variables.insert("RS".to_string(), Value::String("\n".to_string()));
         variables.insert("ORS".to_string(), Value::String("\n".to_string()));
-        
+
         Self {
             variables,
             fields: Vec::new(),
@@ -887,7 +884,7 @@ impl Interpreter {
             output_record_separator: "\n".to_string(),
         }
     }
-    
+
     // Allow external configuration of field separator (for -F command line option)
     pub fn set_field_separator(&mut self, fs: String) {
         self.field_separator = fs.clone();
@@ -908,23 +905,23 @@ pub fn run_program(&mut self, program: &Program, input: &str) -> Result<()> {
             self.execute_statements(&rule.action)?;
         }
     }
-    
+
     // Phase 2: Process input record by record
     let records: Vec<&str> = if self.record_separator == "\n" {
         input.lines().collect()  // Default: split on newlines
     } else {
         input.split(&self.record_separator).collect()  // Custom record separator
     };
-    
+
     for record in records {
         if record.is_empty() {
             continue;  // Skip empty records
         }
-        
+
         // Update record state
         self.record_number += 1;
         self.split_fields(record);
-        
+
         // Execute pattern-matching rules for this record
         for rule in &program.rules {
             match &rule.pattern {
@@ -952,14 +949,14 @@ pub fn run_program(&mut self, program: &Program, input: &str) -> Result<()> {
             }
         }
     }
-    
+
     // Phase 3: Execute all END rules after processing all input
     for rule in &program.rules {
         if let Some(Pattern::End) = rule.pattern {
             self.execute_statements(&rule.action)?;
         }
     }
-    
+
     Ok(())
 }
 ```
@@ -973,7 +970,7 @@ Field splitting is a core AWK operation that converts each input record into num
 ```rust
 fn split_fields(&mut self, line: &str) {
     self.fields = vec![line.to_string()]; // $0 is always the entire record
-    
+
     if self.field_separator == " " {
         // AWK's default behavior: split on any whitespace, ignore leading/trailing
         self.fields.extend(
@@ -989,11 +986,11 @@ fn split_fields(&mut self, line: &str) {
                 .collect::<Vec<_>>()
         );
     }
-    
+
     // Update built-in variables
-    self.variables.insert("NF".to_string(), 
+    self.variables.insert("NF".to_string(),
         Value::Number((self.fields.len() - 1) as f64));
-    self.variables.insert("NR".to_string(), 
+    self.variables.insert("NR".to_string(),
         Value::Number(self.record_number as f64));
 }
 ```
@@ -1009,25 +1006,25 @@ fn eval_expr(&self, expr: &Expr) -> Result<Value> {
     match expr {
         Expr::Number(n) => Ok(Value::Number(*n)),
         Expr::String(s) => Ok(Value::String(s.clone())),
-        
+
         Expr::Identifier(name) => {
             // Variable lookup with AWK semantics: undefined variables are empty strings
             Ok(self.variables.get(name)
                 .cloned()
                 .unwrap_or(Value::String("".to_string())))
         },
-        
+
         Expr::BuiltinVar(name) => {
             // Built-in variables default to 0 if not found
             Ok(self.variables.get(name)
                 .cloned()
                 .unwrap_or(Value::Number(0.0)))
         },
-        
+
         Expr::FieldRef(index_expr) => {
             let index = self.eval_expr(index_expr)?;
             let idx = index.to_number() as usize;
-            
+
             // AWK allows accessing fields beyond NF (returns empty string)
             if idx < self.fields.len() {
                 Ok(Value::String(self.fields[idx].clone()))
@@ -1035,13 +1032,13 @@ fn eval_expr(&self, expr: &Expr) -> Result<Value> {
                 Ok(Value::String("".to_string()))
             }
         },
-        
+
         Expr::BinaryOp { op, left, right } => {
             let lval = self.eval_expr(left)?;
             let rval = self.eval_expr(right)?;
             self.eval_binary_op(op, &lval, &rval)
         },
-        
+
         Expr::UnaryOp { op, operand } => {
             let val = self.eval_expr(operand)?;
             self.eval_unary_op(op, &val)
@@ -1228,7 +1225,7 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                         },
                     };
                     self.variables.insert(name.clone(), final_value);
-                    
+
                     // Update separators if built-in variables are modified
                     if name == "FS" {
                         self.field_separator = self.variables.get("FS").unwrap().to_string();
@@ -1243,16 +1240,16 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                 AssignTarget::FieldRef(field_expr) => {
                     let index = self.eval_expr(field_expr)?;
                     let idx = index.to_number() as usize;
-                    
+
                     // Extend fields array if necessary
                     while self.fields.len() <= idx {
                         self.fields.push("".to_string());
                     }
-                    
+
                     self.fields[idx] = new_value.to_string();
-                    
+
                     // Update NF
-                    self.variables.insert("NF".to_string(), 
+                    self.variables.insert("NF".to_string(),
                         Value::Number((self.fields.len() - 1) as f64));
                 },
             }
@@ -1269,15 +1266,15 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                 AssignTarget::FieldRef(field_expr) => {
                     let index = self.eval_expr(field_expr)?;
                     let idx = index.to_number() as usize;
-                    
+
                     while self.fields.len() <= idx {
                         self.fields.push("".to_string());
                     }
-                    
+
                     let current = self.fields[idx].parse::<f64>().unwrap_or(0.0);
                     self.fields[idx] = (current + 1.0).to_string();
-                    
-                    self.variables.insert("NF".to_string(), 
+
+                    self.variables.insert("NF".to_string(),
                         Value::Number((self.fields.len() - 1) as f64));
                 },
             }
@@ -1294,15 +1291,15 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
                 AssignTarget::FieldRef(field_expr) => {
                     let index = self.eval_expr(field_expr)?;
                     let idx = index.to_number() as usize;
-                    
+
                     while self.fields.len() <= idx {
                         self.fields.push("".to_string());
                     }
-                    
+
                     let current = self.fields[idx].parse::<f64>().unwrap_or(0.0);
                     self.fields[idx] = (current - 1.0).to_string();
-                    
-                    self.variables.insert("NF".to_string(), 
+
+                    self.variables.insert("NF".to_string(),
                         Value::Number((self.fields.len() - 1) as f64));
                 },
             }
@@ -1324,16 +1321,16 @@ fn execute_statement(&mut self, stmt: &Statement) -> Result<()> {
             if let Some(init_stmt) = init {
                 self.execute_statement(init_stmt)?;
             }
-            
+
             loop {
                 if let Some(cond) = condition {
                     if !self.eval_expr(cond)?.is_truthy() {
                         break;
                     }
                 }
-                
+
                 self.execute_statement(body)?;
-                
+
                 if let Some(update_stmt) = update {
                     self.execute_statement(update_stmt)?;
                 }
@@ -1376,7 +1373,6 @@ pest_derive = "2.8"
 clap = { version = "4", features = ["derive"] }
 regex = "1.5"
 anyhow = "1"
-lazy_static = "1.4"
 ```
 
 ### Main Application Structure
@@ -1467,7 +1463,7 @@ Examples:
 
     // Create and configure interpreter
     let mut interpreter = Interpreter::new();
-    
+
     if let Some(fs) = matches.get_one::<String>("field-separator") {
         interpreter.set_field_separator(fs.clone());
     }
@@ -1531,14 +1527,6 @@ parse_program(&program_text)?
 let regex = Regex::new(regex_str)?;
 ```
 
-**`lazy_static`** manages global state:
-```rust
-// Computed once, used many times
-lazy_static! {
-    static ref PRATT_PARSER: PrattParser<Rule> = { /* ... */ };
-}
-```
-
 ### Testing the Complete Implementation
 
 With all components integrated, you can test the AWK clone with real AWK programs:
@@ -1553,12 +1541,12 @@ cargo run -- -p '/Engineer/ { print $1, "is an engineer" }' employees.txt
 # Statistical processing
 cargo run -- -p 'BEGIN {
                  sum = 0
-                 count = 0 
-                } 
+                 count = 0
+                }
                 $2 > 25 {
                   sum += $2
-                  count++ 
-                } 
+                  count++
+                }
                 END { print "Average age over 25:", sum/count }' employees.txt
 
 # CSV processing with custom separator
@@ -1587,7 +1575,7 @@ Building a complete AWK clone demonstrates several critical aspects of language 
 
 **State Management**: The interpreter carefully manages multiple types of state:
 - **Variable bindings**: User-defined and built-in variables
-- **Field state**: Current record split into indexed fields  
+- **Field state**: Current record split into indexed fields
 - **Execution context**: Current record number, separators, etc.
 
 ### Advanced Language Features
@@ -1628,8 +1616,6 @@ This project showcases how multiple Rust crates work together to solve complex p
 **`regex`**: Offers a high-performance, secure regex engine that handles AWK's pattern matching needs.
 
 **`anyhow`**: Simplifies error handling while providing rich context for debugging.
-
-**`lazy_static`**: Enables efficient initialization of global state (the Pratt parser configuration).
 
 ### Real-World Applications
 
@@ -1686,12 +1672,12 @@ For a language interpreter, performance testing with realistic workloads is cruc
 seq 1 100000 | awk '{print "user" $1, int(rand()*100), "dept" int(rand()*10)}' > large_dataset.txt
 
 # Benchmark against GNU AWK
-time awk '$2 > 50 { 
+time awk '$2 > 50 {
             sum += $2
             count++
         }
         END { print sum/count }' large_dataset.txt
-time ./target/release/awk-clone -p '$2 > 50 { 
+time ./target/release/awk-clone -p '$2 > 50 {
             sum += $2
             count++
         }
@@ -1718,7 +1704,7 @@ Building a complete AWK clone demonstrates that modern language implementation i
 The key insights from this project:
 
 1. **Grammar design matters**: Careful attention to operator precedence and tokenization prevents subtle bugs
-2. **Error handling is crucial**: Good error messages make the difference between a usable tool and a frustrating experience  
+2. **Error handling is crucial**: Good error messages make the difference between a usable tool and a frustrating experience
 3. **Modular architecture scales**: Separating concerns allows each component to evolve independently
 4. **Idiomatic Rust patterns improve maintainability**: Using standard traits like `Display` instead of custom methods makes code more familiar and integrates better with the ecosystem
 5. **Testing drives quality**: Comprehensive tests catch edge cases that informal testing misses
